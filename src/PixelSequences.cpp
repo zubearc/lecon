@@ -1,5 +1,7 @@
 #include "PixelSequences.h"
 
+#include <algorithm>
+
 void renderLoopText(String &text, int textLen, long rgba, int speed, int startingIndex) {
     auto ti = startingIndex;
     
@@ -22,7 +24,7 @@ void renderLoopText(String &text, int textLen, long rgba, int speed, int startin
     }
 }
 
-void renderScrolling(String &text, int textLen, long rgba, int until, int speed, int startingIndex) {
+void renderScrolling(const String &text, int textLen, long rgba, int until, int speed, int startingIndex) {
     auto ti = startingIndex;
     
     auto running = true;
@@ -47,7 +49,7 @@ void renderScrolling(String &text, int textLen, long rgba, int until, int speed,
     delay(50);
 }
 
-void writeScrollable(String &text, long color, int speed) {
+void writeScrollable(const String &text, long color, int speed) {
     flush();
     auto w = write(text, color);
     // flush();
@@ -77,8 +79,8 @@ void writeFlashing(String &text, long color, int speed, int startingIndex) {
 
         if (len > PIXEL_COLUMNS) {
             render();
-            delay(400);
-            renderScrolling(s, s.length(), color, len, 100);
+            // delay(400);
+            // renderScrolling(s, s.length(), color, len, 100);
         }
 
         render();
@@ -86,6 +88,44 @@ void writeFlashing(String &text, long color, int speed, int startingIndex) {
             delay(speed);
         else
             delay(speed + 300);
+    }
+    // flush();
+    // render();
+
+    auto timer = nullptr;
+}
+
+void writeFlashingTimed(String &text, long color, int completeWithinMS, int startingIndex) {
+    // auto s = text.split(' ');
+    auto ti = startingIndex;
+    auto tempTime = 0;
+
+	auto count = std::count(text.begin(), text.end(), ' ') + 1;
+	if (count == 0) {
+		return writeFlashing(text, color);
+	}
+	float speed = (float)abs(completeWithinMS) / (float)count;
+	// printf("%d / %d -> Speed: %4.4f\n", completeWithinMS, count, speed);
+
+    int pos = 0;
+    String s;
+
+    while (splitString(' ', text, pos, s)) {
+        flush();
+		// Serial.println(s);
+        auto len = write(s, color);
+
+        if (len > PIXEL_COLUMNS) {
+            render();
+            // delay(400);
+            // renderScrolling(s, s.length(), color, len, 100);
+        }
+
+        render();
+        // if (len < 30)
+            // delay(speed - 100);
+        // else
+            delay(speed);
     }
     // flush();
     // render();

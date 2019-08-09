@@ -11,11 +11,13 @@
 
 void renderLoopText(String &text, int textLen, long rgba, int speed = 100, int startingIndex = 10);
 
-void renderScrolling(String &text, int textLen, long rgba, int until, int speed = 100, int startingIndex = 0);
+void renderScrolling(const String &text, int textLen, long rgba, int until, int speed = 100, int startingIndex = 0);
 
-void writeScrollable(String &text, long color, int speed = 200);
+void writeScrollable(const String &text, long color, int speed = 200);
 
 void writeFlashing(String &text, long color, int speed = 900, int startingIndex = 0);
+
+void writeFlashingTimed(String &text, long color, int completeWithinMS, int startingIndex = 0);
 
 void run_weather();
 

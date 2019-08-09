@@ -1,5 +1,6 @@
 #pragma once
 
+#include <thread>
 #include <unistd.h>
 
 #define PIXEL_COLUMNS 32
@@ -13,6 +14,16 @@ using String = std::string;
 
 extern unsigned int loops;
 
+enum LeconMode {
+    DisplayingDefault,
+    DisplayingAnimated,
+    DisplayingBuffer,
+    DisplayingLyrics,
+    Blocked
+};
+
+extern LeconMode programMode;
+
 inline unsigned int randr(unsigned int min, unsigned int max) {
 	double scaled = (double)rand() / RAND_MAX;
 
@@ -23,3 +34,4 @@ inline void SleepMS(int milliseconds) {
     usleep(milliseconds * 1000);
 }
 
+extern int childThreadPID;

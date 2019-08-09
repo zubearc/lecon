@@ -69,13 +69,15 @@ void draw(int x, int y, long color);
 
 char drawChar(char xoff, char yoff, char c, long rgb);
 
-int write(String text, long rgba);
+int write(const String &text, long rgba);
 
-void write(String text, long rgba, int x, int y = 0);
+void write(const String &text, long rgba, int x, int y = 0);
 
 void write(int num, long rgba);
 
 void writePixels(std::vector<XY> &buffer, int color);
+
+void writePixels(std::vector<XY> &buffer, std::vector<int> colors);
 
 
 inline void render()

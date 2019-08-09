@@ -3,6 +3,10 @@
 #include <sstream>
 #include <fstream>
 #include <ctime>
+#include <functional>
+#include <sys/time.h> // unix gettimeofday
+#include <sys/types.h>
+#include <signal.h>
 #include "Values.h"
 
 // My bootleg string split!
@@ -45,4 +49,34 @@ inline int getCurrentHour() {
 
     int hour = tm_struct->tm_hour;
     return hour;
+}
+
+inline long long CurrentTimeMS() {
+    struct timeval te; 
+    gettimeofday(&te, NULL); // get current time
+    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // calculate milliseconds
+    // printf("milliseconds: %lld\n", milliseconds);
+    return milliseconds;
+}
+
+inline void killChildThread() {
+  if (childThreadPID != 0) {
+    printf("killing %d\n", childThreadPID);
+    kill(childThreadPID, SIGKILL);
+  }
+}
+
+inline void executeOnChildThread(std::function<void(void)> execable) {
+  killChildThread();
+
+  int pid = fork();
+  if (pid == 0) {
+    printf("RUNNIN FROM %d\n", childThreadPID);
+    execable();
+    _exit(0);
+  } else {
+    childThreadPID = pid;
+    printf("SET CHILD PID TO %d", childThreadPID);
+  }
+    // printf("RUNNIN FROM %d\n", childThreadPID);
 }

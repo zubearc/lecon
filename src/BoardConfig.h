@@ -40,17 +40,12 @@ static int height = HEIGHT;
 static int led_count = LED_COUNT;
 
 #define BRIGHTNESS 7
+// #define BRIGHTNESS 50
+
 
 static int clear_on_exit = 0;
 
-static ws2811_channel_t channel1{
-	GPIO_PIN, // gpionum
-	0, //invert
-	LED_COUNT,
-	STRIP_TYPE,
-	0,
-	BRIGHTNESS
-};
+extern ws2811_channel_t channel1;
 
 static ws2811_channel_t channel2{};
 

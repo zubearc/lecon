@@ -79,7 +79,7 @@ char drawChar(char xoff, char yoff, char c, long rgb) {
 	return cwidth;
 }
 
-int write(String text, long rgba) {
+int write(const String &text, long rgba) {
 	auto x = 0;
 	auto lwlen = 0;
 	for (auto c : text) {
@@ -90,7 +90,7 @@ int write(String text, long rgba) {
     return x;
 }
 
-void write(String text, long rgba, int x, int y) {
+void write(const String &text, long rgba, int x, int y) {
 	auto lwlen = 0;
 	for (auto c : text) {
 		lwlen = drawChar(x, y, c, rgba);
@@ -130,6 +130,23 @@ void writePixels(std::vector<XY> &buffer, int rgb) {
 		if (x >= PIXEL_COLUMNS || y >= PIXEL_ROWS || x < 0 || y < 0)
 			continue;
 		draw(x, y, rgb);
+		// table[y][x] = style || 'background-color: green;';
+	}
+}
+
+void writePixels(std::vector<XY> &buffer, std::vector<int> colors) {
+	auto xoff = 0;
+    auto yoff = 0;
+    auto pm = buffer;
+    auto len = buffer.size();
+    for (int i = 0; i < len; i++) {
+		auto pix = pm[i];
+		// cwidth = pix.x + 1;
+		auto x = pix.x + xoff;
+		auto y = pix.y + yoff;
+		if (x >= PIXEL_COLUMNS || y >= PIXEL_ROWS || x < 0 || y < 0)
+			continue;
+		draw(x, y, colors[i]);
 		// table[y][x] = style || 'background-color: green;';
 	}
 }
