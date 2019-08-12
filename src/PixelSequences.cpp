@@ -2,6 +2,29 @@
 
 #include <algorithm>
 
+
+void renderScrollingHighlight(const String &text, int lowerColor, int upperColor, int speed) {
+    auto wait_time = speed / text.size();
+
+    for (int i = 0; i < text.size(); i++) {
+        flush();
+        auto _c = text[i];
+
+        auto x = 0;
+        auto lwlen = 0;
+        for (int j = 0; j < text.size(); j++) {
+            auto c = text[j];
+            lwlen = drawChar(x, 0, c, i >= j ? upperColor : lowerColor);
+            x += lwlen + 1;
+        }
+
+        render();
+        delay(wait_time);
+    }
+
+    return;
+}
+
 void renderLoopText(String &text, int textLen, long rgba, int speed, int startingIndex) {
     auto ti = startingIndex;
     
@@ -64,7 +87,7 @@ void writeScrollable(const String &text, long color, int speed) {
     }
 }
 
-void writeFlashing(String &text, long color, int speed, int startingIndex) {
+void writeFlashing(const String &text, long color, int speed, int startingIndex) {
     // auto s = text.split(' ');
     auto ti = startingIndex;
     auto tempTime = 0;
@@ -95,7 +118,7 @@ void writeFlashing(String &text, long color, int speed, int startingIndex) {
     auto timer = nullptr;
 }
 
-void writeFlashingTimed(String &text, long color, int completeWithinMS, int startingIndex) {
+void writeFlashingTimed(const String &text, long color, int completeWithinMS, int startingIndex) {
     // auto s = text.split(' ');
     auto ti = startingIndex;
     auto tempTime = 0;
@@ -113,6 +136,12 @@ void writeFlashingTimed(String &text, long color, int completeWithinMS, int star
     while (splitString(' ', text, pos, s)) {
         flush();
 		// Serial.println(s);
+
+//
+        renderScrollingHighlight(s, 0x20, color, speed);
+        continue;
+//
+
         auto len = write(s, color);
 
         if (len > PIXEL_COLUMNS) {

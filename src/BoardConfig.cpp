@@ -9,13 +9,13 @@ ws2811_t ledstring {
 	{channel1, channel2}
 };
 
-extern ws2811_channel_t channel1{
+ws2811_channel_t channel1{
 	GPIO_PIN, // gpionum
 	0, //invert
 	LED_COUNT,
 	STRIP_TYPE,
 	0,
-	50
+	25
 	//BRIGHTNESS
 };
 

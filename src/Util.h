@@ -10,7 +10,7 @@
 #include "Values.h"
 
 // My bootleg string split!
-inline int splitString(char delimiter, String &what, int &pos, String &out) {
+inline int splitString(char delimiter, const String &what, int &pos, String &out) {
 	auto len = what.length();
 	if (pos == len) return 0;
 	for (int i = pos + 1; i < len; i++) {
@@ -69,10 +69,13 @@ inline void killChildThread() {
 inline void executeOnChildThread(std::function<void(void)> execable) {
   killChildThread();
 
+  int parentPid = getpid();
+
   int pid = fork();
   if (pid == 0) {
     printf("RUNNIN FROM %d\n", childThreadPID);
     execable();
+    kill(parentPid, SIGUSR1); // Parent Reset State
     _exit(0);
   } else {
     childThreadPID = pid;

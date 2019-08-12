@@ -12,12 +12,12 @@ std::string qGetTimeString() {
 
     std::stringstream ss;
     // ss << std::put_time(std::localtime(&in_time_t), "%l~%M~%S~%p");
-    ss << std::put_time(std::localtime(&in_time_t), "%l~%M %p ");
+    ss << std::put_time(std::localtime(&in_time_t), "%l %M %p");
 
     auto s = ss.str();
     // if (s[0] == ' ') {
     //     s.pop
     // }
-    s.pop_back();
+    // s.pop_back();
     return s;
 }

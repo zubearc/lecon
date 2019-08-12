@@ -9,15 +9,17 @@
 
 #define delay SleepMS
 
+void renderScrollingHighlight(const String &text, int lowerColor, int upperColor, int speed);
+
 void renderLoopText(String &text, int textLen, long rgba, int speed = 100, int startingIndex = 10);
 
 void renderScrolling(const String &text, int textLen, long rgba, int until, int speed = 100, int startingIndex = 0);
 
 void writeScrollable(const String &text, long color, int speed = 200);
 
-void writeFlashing(String &text, long color, int speed = 900, int startingIndex = 0);
+void writeFlashing(const String &text, long color, int speed = 900, int startingIndex = 0);
 
-void writeFlashingTimed(String &text, long color, int completeWithinMS, int startingIndex = 0);
+void writeFlashingTimed(const String &text, long color, int completeWithinMS, int startingIndex = 0);
 
 void run_weather();
 

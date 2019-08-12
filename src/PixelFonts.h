@@ -335,7 +335,8 @@ case 'z':
         ptr = (XY *)&char63;
         len = 14;
         break;
-case '.':
+case '.': 
+case ':':
         ptr = (XY *)&char99;
         len = 1;
         break;
