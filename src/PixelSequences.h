@@ -21,6 +21,8 @@ void writeFlashing(const String &text, long color, int speed = 900, int starting
 
 void writeFlashingTimed(const String &text, long color, int completeWithinMS, int startingIndex = 0);
 
+void wipe(int time);
+
 void run_weather();
 
 void run_disco();

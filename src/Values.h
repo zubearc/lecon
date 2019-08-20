@@ -3,8 +3,11 @@
 #include <thread>
 #include <unistd.h>
 
-#define PIXEL_COLUMNS 32
-#define PIXEL_ROWS 8
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
+#define PIXEL_COLUMNS WIDTH
+#define PIXEL_ROWS HEIGHT
 
 
 typedef unsigned char u8;

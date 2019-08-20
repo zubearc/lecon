@@ -14,7 +14,7 @@ void renderScrollingHighlight(const String &text, int lowerColor, int upperColor
         auto lwlen = 0;
         for (int j = 0; j < text.size(); j++) {
             auto c = text[j];
-            lwlen = drawChar(x, 0, c, i >= j ? upperColor : lowerColor);
+            lwlen = drawChar(x, 0, c, i >= j ? upperColor : lowerColor, FontType::New);
             x += lwlen + 1;
         }
 
@@ -55,7 +55,7 @@ void renderScrolling(const String &text, int textLen, long rgba, int until, int 
     while (running) {
         flush();
 
-        write(text, rgba, ti--);
+        write(text, rgba, ti--, 0, FontType::New);
 
         // TODO: not use black magic
         // auto fw = textLen * 5;
@@ -69,12 +69,12 @@ void renderScrolling(const String &text, int textLen, long rgba, int until, int 
         render();
         delay(speed);
     }
-    delay(50);
+    delay(1050);
 }
 
 void writeScrollable(const String &text, long color, int speed) {
     flush();
-    auto w = write(text, color);
+    auto w = write(text, color, FontType::New);
     // flush();
     // write(w, color);
     // render();
@@ -138,6 +138,7 @@ void writeFlashingTimed(const String &text, long color, int completeWithinMS, in
 		// Serial.println(s);
 
 //
+        // renderScrollingHighlight(s, 0x20, 0x2000F0, speed);
         renderScrollingHighlight(s, 0x20, color, speed);
         continue;
 //
@@ -160,6 +161,19 @@ void writeFlashingTimed(const String &text, long color, int completeWithinMS, in
     // render();
 
     auto timer = nullptr;
+}
+
+void wipe(int time) {
+    auto sleep_time = time / WIDTH;
+    printf("Sleep time:%d\n",sleep_time);
+    for (int x = 0; x < WIDTH; x++) {
+        for (int y = 0; y < HEIGHT; y++) {
+            draw(x, y, 0);
+        }
+
+        render();
+        delay(sleep_time);
+    }
 }
 
 // custom

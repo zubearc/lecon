@@ -31,7 +31,7 @@
 #define STRIP_TYPE              WS2811_STRIP_GBR		// WS2812/SK6812RGB integrated chip+leds
 //#define STRIP_TYPE            SK6812_STRIP_RGBW		// SK6812RGBW (NOT SK6812RGB)
 
-#define WIDTH                   32
+#define WIDTH                   64
 #define HEIGHT                  8
 #define LED_COUNT               (WIDTH * HEIGHT)
 
@@ -56,3 +56,10 @@ extern ws2811_led_t *matrix;
 extern uint8_t running;
 
 extern char lowBrightness;
+
+enum class FontType:int {
+    Old,
+    New
+};
+
+extern FontType globalDefaultFont;

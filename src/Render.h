@@ -14,9 +14,9 @@ extern "C" {
 }
 
 #include "Values.h"
-#include "PixelFonts.h"
+#include "PixelFonts2.h"
 
-#define NUM_LEDS 8 * 32
+#define NUM_LEDS LED_COUNT
 #define DATA_PIN 6
 
 inline void matrix_render2(void)
@@ -67,11 +67,11 @@ void draw(int offset, long color);
 
 void draw(int x, int y, long color);
 
-char drawChar(char xoff, char yoff, char c, long rgb);
+char drawChar(short xoff, short yoff, char c, long rgb, FontType font = FontType::Old);
 
-int write(const String &text, long rgba);
+int write(const String &text, long rgba, FontType font = FontType::Old);
 
-void write(const String &text, long rgba, int x, int y = 0);
+void write(const String &text, long rgba, int x, int y = 0, FontType font = FontType::Old);
 
 void write(int num, long rgba);
 

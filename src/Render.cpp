@@ -52,12 +52,12 @@ void draw(int x, int y, long color) {
 
 #define RB *
 
-char drawChar(char xoff, char yoff, char c, long rgb) {
+char drawChar(short xoff, short yoff, char c, long rgb, FontType font) {
 	//auto pm = C[c];
 	if (c == '~') return 0;
 	const XY *pm = 0;
 	int len = 0;
-	getChar(c, pm, len);
+	getChar(c, pm, len, (int)(font));
 	//printf("charlen:%d\n",len);
 	if (!len)
 	{
@@ -79,21 +79,21 @@ char drawChar(char xoff, char yoff, char c, long rgb) {
 	return cwidth;
 }
 
-int write(const String &text, long rgba) {
+int write(const String &text, long rgba, FontType font) {
 	auto x = 0;
 	auto lwlen = 0;
 	for (auto c : text) {
-		lwlen = drawChar(x, 0, c, rgba);
+		lwlen = drawChar(x, 0, c, rgba, font);
 		x += lwlen + 1;
 	}
 
     return x;
 }
 
-void write(const String &text, long rgba, int x, int y) {
+void write(const String &text, long rgba, int x, int y, FontType font) {
 	auto lwlen = 0;
 	for (auto c : text) {
-		lwlen = drawChar(x, y, c, rgba);
+		lwlen = drawChar(x, y, c, rgba, font);
 		x += lwlen + 1;
 	}
 }

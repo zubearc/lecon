@@ -16,10 +16,12 @@ ws2811_channel_t channel1{
 	STRIP_TYPE,
 	0,
 	25
-	//BRIGHTNESS
+	// BRIGHTNESS
 };
 
 ws2811_led_t *matrix = 0;
 uint8_t running = 1;
 
 char lowBrightness = false;
+
+FontType globalDefaultFont = FontType::Old;
