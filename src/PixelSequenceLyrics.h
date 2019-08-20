@@ -9,6 +9,7 @@ struct Lyric {
     int msdelay = 0;
     std::string line;
     int mscompletion = 0; //<- How much MS max rendering this line can take
+    int color = 0xF1;
 };
 
 extern std::string qLyricAuthor;

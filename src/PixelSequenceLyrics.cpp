@@ -13,6 +13,8 @@ bool _qLyricsInit(std::stringstream &ws) {
     qLyricAuthor = "?";
     qLyrics = {};
 
+    int color = 0;
+
     String author;
     std::getline(ws, author);
     String title;
@@ -20,6 +22,14 @@ bool _qLyricsInit(std::stringstream &ws) {
 
     qLyricAuthor = author;
     printf("LOADED LYRIC, %s\n", qLyricAuthor.c_str());
+
+    if (author == "1FlAMUpKrjY4NdaqsXjl1w") {
+        color = 0x2000F0;
+    } else if (author == "0PiRp1VzEBHp68wY1M7zMs") {
+        color = 0x400000;
+    } else if (author == "3JPXFD2aJ4dHPMnGwo41bO") {
+        color = 0xFF071585;
+    }
 
     String line;
     while (std::getline(ws, line)) {
@@ -29,7 +39,16 @@ bool _qLyricsInit(std::stringstream &ws) {
         std::string lyric;
         std::getline(linestrm, lyric);
 
-        qLyrics.push_back({ std::stoi(ts), lyric, 0 });
+        // Color randomizer
+        if (!color) {
+            auto red = randr(0x10, 100);
+            auto green = randr(0x10, 0x20);
+            auto blue = randr(0x10, 100);
+            // color = pack(0x10, blue, green, red);
+            color = 0xAA;
+        }
+
+        qLyrics.push_back({ std::stoi(ts), lyric, 0, color });
         // printf("LYRIC: %s $ %s\n", ts.c_str(), lyric.c_str());
     }
 
@@ -40,6 +59,8 @@ bool _qLyricsInit(std::stringstream &ws) {
             auto completeby = abs(next.msdelay - lyric.msdelay);
             lyric.mscompletion = next.msdelay;
             // printf("complete by: %d\n", lyric.mscompletion);
+        } else {
+            lyric.mscompletion = 3000;
         }
     }
     return true;
@@ -74,6 +95,7 @@ bool qLyricsRun(int currentms) {
     }
 
     printf("%d - %d = %d sleep\n", qLyrics[0].msdelay, currentms, idelay);
+    std::string lasttext = "";
     // long long last_delay = 0;
     for (auto lyric : qLyrics) {
         auto starttime = CurrentTimeMS();
@@ -87,7 +109,15 @@ bool qLyricsRun(int currentms) {
 
         printf("disp for %d\n", display_time);
 
-        writeFlashingTimed(lyric.line, 0xF1, MAX(10, display_time));
+        // fprintf(stderr, "[%s]",lyric.line.c_str());
+        if (lyric.line == "" && lasttext != "") {
+            // writeFlashingTimed(lasttext, 0, MAX(10, display_time / 2));
+            wipe(MAX(10, display_time / 2));
+            writeFlashingTimed(lyric.line, 0, MAX(10, display_time / 2));
+        } else {
+            writeFlashingTimed(lyric.line, /*0xF1*/lyric.color, MAX(10, display_time));
+        }
+        lasttext = lyric.line;
 
         auto curtime = CurrentTimeMS();
 
