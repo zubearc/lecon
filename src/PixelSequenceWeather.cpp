@@ -40,22 +40,25 @@ void qWeatherUpdate() {
 }
 
 void qWeatherStart() {
-    flush();
+    flushRegion = Left;
+    flushLeft();
 	write("   " + qWeatherCurrentTemperature, 0xFF071585);
 	// write("NOW", 0xff0000, 16);
 	render();
 	delay(2000);
 
-	writeFlashing(qWeatherCurrentConditions, 0xC7158500);
+	writeFlashing(qWeatherCurrentConditions, 0x276525);
 	////  write("NOW", 0xff0000, 16);
 	//  render();
 	//  delay(2000);
 
     for (auto fe : qWeatherFuture) {
-        flush();
+        flushLeft();
         write(fe, 0x2000);
+        
         // write("1 HR", 0x2000, 16);
         render();
         delay(2000);
     }
+    flushRegion = Both;
 }

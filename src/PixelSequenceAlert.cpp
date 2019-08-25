@@ -38,19 +38,21 @@ bool qAlertHasNearby() {
 
 void qNearbyAlertStart(NearbyAlert alert) {
     flush();
-    write("NEARBY!", 0x4040);
+    write("NEARBY!", 0x4040, 0xffff);
     render();
 
     delay(2000);
 
-    writeFlashing(alert.title, 0x4000);
+    writeScrollable("    " + alert.title, 0x4000, 200, FontType::New);
 
-    writeScrollable(alert.precinct, 0x4010);
+    delay(1000);
+
+    writeScrollable(alert.precinct, 0x4010, 200, FontType::Old);
     // render();
 
     delay(1000);
 
-    writeScrollable(alert.location, 0x40, 100);
+    writeScrollable(alert.location, 0x60, 200, FontType::New);
 
     delay(1000);
 
@@ -63,6 +65,7 @@ void qNearbyAlertStart(NearbyAlert alert) {
 
 void qNearbyAlertStart() {
     for (auto alert : qNearbyAlert) {
+        qNearbyAlertStart(alert);
         qNearbyAlertStart(alert);
     }
 
