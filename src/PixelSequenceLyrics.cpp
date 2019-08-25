@@ -26,7 +26,8 @@ bool _qLyricsInit(std::stringstream &ws) {
     if (author == "1FlAMUpKrjY4NdaqsXjl1w") {
         color = 0x2000F0;
     } else if (author == "0PiRp1VzEBHp68wY1M7zMs") {
-        color = 0x400000;
+        // color = 0x200000;
+        color = 0xD0;
     } else if (author == "3JPXFD2aJ4dHPMnGwo41bO") {
         color = 0xFF071585;
     }

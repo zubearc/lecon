@@ -6,6 +6,18 @@
 #include <iomanip> // put_time
 #include <string>  // string
 
+std::string qGetDateString() {
+    auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+
+    std::stringstream ss;
+    // ss << std::put_time(std::localtime(&in_time_t), "%l~%M~%S~%p");
+    ss << std::put_time(std::localtime(&in_time_t), "%a, %e");
+
+    auto s = ss.str();
+    return s;
+}
+
 std::string qGetTimeString() {
     auto now = std::chrono::system_clock::now();
     auto in_time_t = std::chrono::system_clock::to_time_t(now);

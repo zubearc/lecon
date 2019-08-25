@@ -91,7 +91,16 @@ void iSpotifyNPLTick() {
             programMode = Blocked;
         } else {
             // printf("(%s != %s)\n", qLyricAuthor.c_str(), np_id.c_str());
-            writeScrollable("NP", 0x2F00, 500);
+            // writeScrollable("NP", 0x2F00, 500);
+            // for (int i = 16; i < 48; i++) {
+            //     if ((i % 2) == 0)
+            //         draw(i, 0, 0x2000);
+            //     // else
+            //     //     draw(i, 7, 0x2000);
+            // }
+            flushLeft();
+            write("NP", 0x2000);
+            render();
             delay(1000);
             // writeScrollable(np_name, 0x2F00, 100);
             delay(500);
