@@ -63,3 +63,11 @@ enum class FontType:int {
 };
 
 extern FontType globalDefaultFont;
+
+enum FlushRegion : int {
+    Both = 0,
+    Left,
+    Right
+};
+
+extern FlushRegion flushRegion;

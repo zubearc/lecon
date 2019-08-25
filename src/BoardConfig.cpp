@@ -15,7 +15,7 @@ ws2811_channel_t channel1{
 	LED_COUNT,
 	STRIP_TYPE,
 	0,
-	25
+	7,
 	// BRIGHTNESS
 };
 
@@ -25,3 +25,5 @@ uint8_t running = 1;
 char lowBrightness = false;
 
 FontType globalDefaultFont = FontType::Old;
+
+FlushRegion flushRegion = FlushRegion::Both;
