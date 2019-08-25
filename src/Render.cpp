@@ -52,7 +52,7 @@ void draw(int x, int y, long color) {
 
 #define RB *
 
-char drawChar(short xoff, short yoff, char c, long rgb, FontType font) {
+char drawChar(short xoff, short yoff, char c, long rgb, FontType font, bool dry) {
 	//auto pm = C[c];
 	if (c == '~') return 0;
 	const XY *pm = 0;
@@ -68,12 +68,18 @@ char drawChar(short xoff, short yoff, char c, long rgb, FontType font) {
 	for (int i = 0; i < len; i++)
 	{
 		auto pix = pm[i];
-		cwidth = MAX(cwidth, pix.x + 1);
+		cwidth = MAX(cwidth, pix.x + 1); // the positioning on this makes me confused
+		// moving it below the continue statement breaks stuff ¯\_(ツ)_/¯
 		auto x = pix.x + xoff;
 		auto y = pix.y + yoff;
+
 		if (x >= PIXEL_COLUMNS || y >= PIXEL_ROWS || x < 0 || y < 0)
 			continue;
-		draw(x, y, rgb);
+
+
+		if (!dry) {
+			draw(x, y, rgb);
+		}
 		// table[y][x] = style || 'background-color: green;';
 	}
 	return cwidth;
@@ -90,7 +96,25 @@ int write(const String &text, long rgba, FontType font) {
     return x;
 }
 
+int dryWrite(const String &text, FontType font) {
+	auto x = 0;
+	auto lwlen = 0;
+	for (auto c : text) {
+		lwlen = drawChar(x, 0, c, 0, font, true);
+		x += lwlen + 1;
+	}
+
+    return x;
+}
+
 void write(const String &text, long rgba, int x, int y, FontType font) {
+
+	if (x == 0xffff) {
+		auto len = dryWrite(text, font);
+		auto dif = PIXEL_COLUMNS - len;
+		x = fastFloor(dif / 2);
+	}
+
 	auto lwlen = 0;
 	for (auto c : text) {
 		lwlen = drawChar(x, y, c, rgba, font);
@@ -99,7 +123,7 @@ void write(const String &text, long rgba, int x, int y, FontType font) {
 }
 
 void write(int num, long rgba) {
-    char str[4];
+    char str[16];
 	sprintf(str, "%d", num);
 
 	//write("HELLO", 0xff000000);
@@ -117,8 +141,8 @@ void write(int num, long rgba) {
 
 }*/
 
-void writePixels(std::vector<XY> &buffer, int rgb) {
-    auto xoff = 0;
+void writePixels(std::vector<XY> &buffer, int rgb, int ox) {
+    auto xoff = ox;
     auto yoff = 0;
     auto pm = buffer;
     auto len = buffer.size();
@@ -134,8 +158,8 @@ void writePixels(std::vector<XY> &buffer, int rgb) {
 	}
 }
 
-void writePixels(std::vector<XY> &buffer, std::vector<int> colors) {
-	auto xoff = 0;
+void writePixels(std::vector<XY> &buffer, std::vector<int> colors, int ox) {
+    auto xoff = ox;
     auto yoff = 0;
     auto pm = buffer;
     auto len = buffer.size();

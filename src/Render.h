@@ -19,6 +19,7 @@ extern "C" {
 #define NUM_LEDS LED_COUNT
 #define DATA_PIN 6
 
+
 inline void matrix_render2(void)
 {
     int x, y;
@@ -62,12 +63,18 @@ inline int pack(char c1, char c2, char c3, char c4) {
             |  (int)((unsigned char)c4));
 }
 
+inline int fastFloor(double V) {
+    return ((V) >= 0 ? (int)(V) : (int)((V) - 1));
+}
+
 
 void draw(int offset, long color);
 
 void draw(int x, int y, long color);
 
-char drawChar(short xoff, short yoff, char c, long rgb, FontType font = FontType::Old);
+char drawChar(short xoff, short yoff, char c, long rgb, FontType font = FontType::Old, bool dry = false);
+
+int dryWrite(const String &text, FontType font);
 
 int write(const String &text, long rgba, FontType font = FontType::Old);
 
@@ -75,10 +82,9 @@ void write(const String &text, long rgba, int x, int y = 0, FontType font = Font
 
 void write(int num, long rgba);
 
-void writePixels(std::vector<XY> &buffer, int color);
+void writePixels(std::vector<XY> &buffer, int color, int xoff = 0);
 
-void writePixels(std::vector<XY> &buffer, std::vector<int> colors);
-
+void writePixels(std::vector<XY> &buffer, std::vector<int> colors, int xoff = 0);
 
 inline void render()
 {
@@ -86,6 +92,15 @@ inline void render()
 	ws2811_render(&ledstring);
 }
 
+inline void flushLeft() {
+    for (int i = 0; i < 255; i++) {
+        matrix[i] = 0;
+    }
+}
+
 inline void flush() {
+    if (flushRegion == Left) {
+        return flushLeft();
+    }
 	matrix_clear2();
 }

@@ -3,18 +3,147 @@
 #include <algorithm>
 
 
-void renderScrollingHighlight(const String &text, int lowerColor, int upperColor, int speed) {
+void renderVertSlide(bool up, int low, int high, int speed) {
+    // matrix_clear2();
+
+    auto clower = pixelMapToNP(low, 0);
+    auto cupper = pixelMapToNP(high, HEIGHT - 1);
+    for (int i = clower; i < cupper; i++) {
+        ledstring.channel[0].leds[i] = 0;
+    }
+
+    for (int a = 0; a < HEIGHT; a++) {
+        for (int x = /*0*/low; x < /*width*/high; x++) {
+            for (int y = 0; y < HEIGHT; y++) {
+                // auto Y = (y - 7) + a;
+                auto Y = (y + 7) - a;
+                if (Y < 0 || Y > 7) {
+                    continue;
+                }
+
+                // auto t = (y * width) + (x + a);
+                // auto n = (y * width) + x;
+                auto t = pixelMapToNP(x, Y);
+                auto n = pixelMapToNP(x, y);
+                // fprintf(stderr, "Y=%d (%d), t=%d, n=%d\n", Y, (height - y), t, n);
+                // if (n < 0 || n > LED_COUNT) {
+                //     continue;
+                // }
+
+                if (t < 0 || t > LED_COUNT) {
+                    continue;
+                }
+
+                ledstring.channel[0].leds[n] = matrix[t];
+            }
+        }
+    //     // return;
+    //     // matrix_render2();
+    //     // render();
+        ws2811_render(&ledstring);
+        delay(speed);
+    }
+
+
+    // for (int a = 0; a < height; a++) {
+    //     for (int x = low; x < high; x++) {
+    //         for (int y = 0; y < height; y++) {
+    //             // auto Y = (y - height) + a;
+    //             // if (Y < 0 || Y > height) {
+    //             //     continue;
+    //             // }
+    //             auto t = y * 32 + x;
+    //             auto n = (y * 32) + x;
+    //             // auto t = pixelMapToNP(x, y);
+    //             // auto n = pixelMapToNP(x, y);
+    //             // fprintf(stderr, "Y=%d (%d), t=%d, n=%d\n", Y, (height - y), t, n);
+    //             // if (n < 0 || n > LED_COUNT) {
+    //             //     continue;
+    //             // }
+
+    //             // if (t < 0 || t > LED_COUNT) {
+    //             //     continue;
+    //             // }
+
+    //             ledstring.channel[0].leds[n] = matrix[t];
+    //         }
+    //     }
+    //     // return;
+    //     // matrix_render2();
+    //     // render();
+    //     ws2811_render(&ledstring);
+    //     delay(100);
+    // }
+
+    // matrix_render2();
+}
+
+void renderVertSlide2(bool up, int speed) {
+    for (int i = 0; i < LED_COUNT; i++) {
+        ledstring.channel[0].leds[i] = 0;
+    }
+
+    for (int a = 0; a < HEIGHT; a++) {
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < HEIGHT; y++) {
+                int Y;
+                if (x < 32) {
+                    Y = (y - 7) + a;
+                } else {
+                    Y = (y + 7) - a;
+                }
+                // auto Y = (y - 7) + a;
+                // auto Y = (y + 7) - a;
+                if (Y < 0 || Y > 7) {
+                    continue;
+                }
+
+                // auto t = (y * width) + (x + a);
+                // auto n = (y * width) + x;
+                auto t = pixelMapToNP(x, Y);
+                auto n = pixelMapToNP(x, y);
+                // fprintf(stderr, "Y=%d (%d), t=%d, n=%d\n", Y, (height - y), t, n);
+                // if (n < 0 || n > LED_COUNT) {
+                //     continue;
+                // }
+
+                if (t < 0 || t > LED_COUNT) {
+                    continue;
+                }
+
+                ledstring.channel[0].leds[n] = matrix[t];
+            }
+        }
+    //     // return;
+    //     // matrix_render2();
+    //     // render();
+        ws2811_render(&ledstring);
+        delay(speed);
+    }
+}
+
+void renderScrollingHighlight(const String &text, int lowerColor, int upperColor, int speed, FontType font) {
+    auto len = dryWrite(text, font);
+    int xoff = 0;
+    if (len > PIXEL_COLUMNS) {
+        font = FontType::Old;
+    } else {
+        auto dif = PIXEL_COLUMNS - len;
+	    xoff = fastFloor(dif / 2);
+        // fprintf(stderr, "PIXEL_COLUMNS(%d) - len(%d)=%d, floor(/ 2) = %d\n", PIXEL_COLUMNS, len, dif, xoff);
+    }
+
     auto wait_time = speed / text.size();
 
     for (int i = 0; i < text.size(); i++) {
         flush();
         auto _c = text[i];
 
-        auto x = 0;
+        auto x = xoff;
         auto lwlen = 0;
         for (int j = 0; j < text.size(); j++) {
             auto c = text[j];
-            lwlen = drawChar(x, 0, c, i >= j ? upperColor : lowerColor, FontType::New);
+            lwlen = drawChar(x, 0, c, i >= j ? upperColor : lowerColor, font);
             x += lwlen + 1;
         }
 
@@ -47,7 +176,7 @@ void renderLoopText(String &text, int textLen, long rgba, int speed, int startin
     }
 }
 
-void renderScrolling(const String &text, int textLen, long rgba, int until, int speed, int startingIndex) {
+void renderScrolling(const String &text, int textLen, long rgba, int until, int speed, int startingIndex, FontType font) {
     auto ti = startingIndex;
     
     auto running = true;
@@ -55,7 +184,11 @@ void renderScrolling(const String &text, int textLen, long rgba, int until, int 
     while (running) {
         flush();
 
-        write(text, rgba, ti--, 0, FontType::New);
+        write(text, rgba, ti--, 0, font);
+
+        // write(CurrentTimeMS() & 0xFFFFFF, 0x20);
+
+        // write(textRenderLen, 0x20);
 
         // TODO: not use black magic
         // auto fw = textLen * 5;
@@ -72,16 +205,16 @@ void renderScrolling(const String &text, int textLen, long rgba, int until, int 
     delay(1050);
 }
 
-void writeScrollable(const String &text, long color, int speed) {
+void writeScrollable(const String &text, long color, int speed, FontType font) {
     flush();
-    auto w = write(text, color, FontType::New);
+    auto w = write(text, color, font);
     // flush();
     // write(w, color);
     // render();
     // delay(1000);
     // return;
     if (w > PIXEL_COLUMNS) {
-        return renderScrolling(text, text.length(), color, w, speed);
+        return renderScrolling(text, text.length(), color, w, speed, 0, font);
     } else {
         render();
     }
@@ -101,7 +234,9 @@ void writeFlashing(const String &text, long color, int speed, int startingIndex)
         auto len = write(s, color);
 
         if (len > PIXEL_COLUMNS) {
-            render();
+            flush();
+            write(s, color, FontType::Old);
+            // render();
             // delay(400);
             // renderScrolling(s, s.length(), color, len, 100);
         }
@@ -146,7 +281,9 @@ void writeFlashingTimed(const String &text, long color, int completeWithinMS, in
         auto len = write(s, color);
 
         if (len > PIXEL_COLUMNS) {
-            render();
+            flush();
+            write(s, color, FontType::Old);
+            // render();
             // delay(400);
             // renderScrolling(s, s.length(), color, len, 100);
         }
