@@ -25,6 +25,8 @@ void writeFlashing(const String &text, long color, int speed = 900, int starting
 
 void writeFlashingTimed(const String &text, long color, int completeWithinMS, int startingIndex = 0);
 
+void displayFlyingArrow(bool rightToLeft, int startX, int endX);
+
 void wipe(int time);
 
 void run_weather();

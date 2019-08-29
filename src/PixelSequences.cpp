@@ -7,16 +7,20 @@ void renderVertSlide(bool up, int low, int high, int speed) {
     // matrix_clear2();
 
     auto clower = pixelMapToNP(low, 0);
-    auto cupper = pixelMapToNP(high, HEIGHT - 1);
+    auto cupper = pixelMapToNP(high, WRITABLE_HEIGHT - 1);
     for (int i = clower; i < cupper; i++) {
+        if (i < 0 || i > WRITEABLE_COUNT) {
+            continue; //bounds check
+        }
         ledstring.channel[0].leds[i] = 0;
     }
 
-    for (int a = 0; a < HEIGHT; a++) {
+    for (int a = 0; a < WRITABLE_HEIGHT; a++) {
+    // for (int a = up ? HEIGHT + 7 : 0; up ? (a > (6)) : (a < WRITABLE_HEIGHT); up ? a-- : a++) {
         for (int x = /*0*/low; x < /*width*/high; x++) {
-            for (int y = 0; y < HEIGHT; y++) {
+            for (int y = 0; y < WRITABLE_HEIGHT; y++) {
                 // auto Y = (y - 7) + a;
-                auto Y = (y + 7) - a;
+                auto Y = up ? (y - 7) + a : (y + 7) - a;
                 if (Y < 0 || Y > 7) {
                     continue;
                 }
@@ -30,67 +34,34 @@ void renderVertSlide(bool up, int low, int high, int speed) {
                 //     continue;
                 // }
 
-                if (t < 0 || t > LED_COUNT) {
+                if (t < 0 || t > WRITEABLE_COUNT || n < 0 || n > WRITEABLE_COUNT) {
                     continue;
                 }
 
                 ledstring.channel[0].leds[n] = matrix[t];
             }
         }
-    //     // return;
-    //     // matrix_render2();
-    //     // render();
+
         ws2811_render(&ledstring);
         delay(speed);
     }
-
-
-    // for (int a = 0; a < height; a++) {
-    //     for (int x = low; x < high; x++) {
-    //         for (int y = 0; y < height; y++) {
-    //             // auto Y = (y - height) + a;
-    //             // if (Y < 0 || Y > height) {
-    //             //     continue;
-    //             // }
-    //             auto t = y * 32 + x;
-    //             auto n = (y * 32) + x;
-    //             // auto t = pixelMapToNP(x, y);
-    //             // auto n = pixelMapToNP(x, y);
-    //             // fprintf(stderr, "Y=%d (%d), t=%d, n=%d\n", Y, (height - y), t, n);
-    //             // if (n < 0 || n > LED_COUNT) {
-    //             //     continue;
-    //             // }
-
-    //             // if (t < 0 || t > LED_COUNT) {
-    //             //     continue;
-    //             // }
-
-    //             ledstring.channel[0].leds[n] = matrix[t];
-    //         }
-    //     }
-    //     // return;
-    //     // matrix_render2();
-    //     // render();
-    //     ws2811_render(&ledstring);
-    //     delay(100);
-    // }
-
-    // matrix_render2();
 }
 
-void renderVertSlide2(bool up, int speed) {
-    for (int i = 0; i < LED_COUNT; i++) {
+void renderVertSlide2(bool reverse, int speed) {
+    for (int i = 0; i < WRITEABLE_COUNT; i++) {
         ledstring.channel[0].leds[i] = 0;
     }
 
-    for (int a = 0; a < HEIGHT; a++) {
+    auto halfWidth = fastFloor(WRITABLE_WIDTH / 2);
+
+    for (int a = 0; a < WRITABLE_HEIGHT; a++) {
         for (int x = 0; x < width; x++) {
-            for (int y = 0; y < HEIGHT; y++) {
+            for (int y = 0; y < WRITABLE_HEIGHT; y++) {
                 int Y;
-                if (x < 32) {
-                    Y = (y - 7) + a;
+                if (x < halfWidth) {
+                    Y = reverse ? (y + 7) - a : (y - 7) + a;
                 } else {
-                    Y = (y + 7) - a;
+                    Y = reverse ? (y - 7) + a : (y + 7) - a;
                 }
                 // auto Y = (y - 7) + a;
                 // auto Y = (y + 7) - a;
@@ -107,7 +78,7 @@ void renderVertSlide2(bool up, int speed) {
                 //     continue;
                 // }
 
-                if (t < 0 || t > LED_COUNT) {
+                if (t < 0 || t > WRITEABLE_COUNT || n < 0 || n > WRITEABLE_COUNT) {
                     continue;
                 }
 
@@ -301,10 +272,10 @@ void writeFlashingTimed(const String &text, long color, int completeWithinMS, in
 }
 
 void wipe(int time) {
-    auto sleep_time = time / WIDTH;
-    printf("Sleep time:%d\n",sleep_time);
-    for (int x = 0; x < WIDTH; x++) {
-        for (int y = 0; y < HEIGHT; y++) {
+    auto sleep_time = time / WRITABLE_WIDTH;
+    // printf("Sleep time:%d\n",sleep_time);
+    for (int x = 0; x < WRITABLE_WIDTH; x++) {
+        for (int y = 0; y < WRITABLE_HEIGHT; y++) {
             draw(x, y, 0);
         }
 
@@ -312,6 +283,55 @@ void wipe(int time) {
         delay(sleep_time);
     }
 }
+
+
+void displayFlyingArrow(bool rightToLeft, int startX, int endX) {
+    _directFlush();
+    _directRender();
+    delay(1000);
+
+    for (int x = 0; x < WRITABLE_WIDTH; x+=3) {
+        _directFlush();
+        for (int y = 0; y < (WRITABLE_HEIGHT - 1); y++) {
+            auto _x = (x + y) - 1;
+            auto _y = y;
+            for (int X = 0; X < _x; X++) {
+                _directDraw(X, _y, getPixel(X, _y));
+
+                // for (int Y = 0; Y < 7; Y++) {
+                //     _directDraw(X, Y, getPixel(X, Y));
+                // }
+            }
+            _directDraw(x + y, y, 0x20);
+        }
+        _directRender();
+        delay(30);
+    }
+
+
+    // delay(500);
+
+    // flush();
+
+    // for (int x = 0; x < 64; x+=3) {
+    //     for (int y = 0; y < 7; y++) {
+    //         auto _x = (x + y) - 1;
+    //         auto _y = y;
+    //         for (int X = 0; X < _x; X++) {
+    //             _directDraw(X, _y, getPixel(X, _y));
+
+    //             // for (int Y = 0; Y < 7; Y++) {
+    //             //     _directDraw(X, Y, getPixel(X, Y));
+    //             // }
+    //         }
+    //         _directDraw(x + y, y, 0x20);
+    //     }
+    //     _directRender();
+    //     delay(40);
+    // }
+    
+}
+
 
 // custom
 

@@ -1,5 +1,9 @@
 #include "BoardConfig.h"
 
+int width = WIDTH;
+int height = HEIGHT;
+int led_count = LED_COUNT;
+
 ws2811_t ledstring {
 	100,
 	0,

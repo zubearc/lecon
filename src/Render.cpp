@@ -1,6 +1,8 @@
 #include "Render.h"
 #include "Values.h"
 
+long long boardStateHash = 0;
+
 void draw(int offset, long color) {
 	u8 green = (color & 0xFF0000) >> (24 - 8);
 	u8 red = (color & 0x00FF00) >> (16 - 8);

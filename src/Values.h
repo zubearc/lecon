@@ -6,8 +6,8 @@
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
-#define PIXEL_COLUMNS WIDTH
-#define PIXEL_ROWS HEIGHT
+#define PIXEL_COLUMNS width
+#define PIXEL_ROWS height
 
 
 typedef unsigned char u8;

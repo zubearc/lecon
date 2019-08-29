@@ -19,18 +19,17 @@ extern "C" {
 #define NUM_LEDS LED_COUNT
 #define DATA_PIN 6
 
-
-inline void matrix_render2(void)
-{
+inline long long matrix_render2(void) {
     int x, y;
+    long long hash = 0;
 
-    for (x = 0; x < width; x++)
-    {
-        for (y = 0; y < height; y++)
-        {
+    for (x = 0; x < width; x++) {
+        for (y = 0; y < height; y++) {
             ledstring.channel[0].leds[(y * width) + x] = matrix[y * width + x];
+            hash += (x * y) + matrix[y * width + x];
         }
     }
+    return hash;
 }
 
 inline void matrix_clear2(void) {
@@ -67,6 +66,11 @@ inline int fastFloor(double V) {
     return ((V) >= 0 ? (int)(V) : (int)((V) - 1));
 }
 
+inline int getPixel(int x, int y) {
+    auto i = pixelMapToNP(x, y);
+    if (i > WRITEABLE_COUNT || i < 0) return 0; //bounds check
+    return matrix[i];
+}
 
 void draw(int offset, long color);
 
@@ -88,7 +92,17 @@ void writePixels(std::vector<XY> &buffer, std::vector<int> colors, int xoff = 0)
 
 inline void render()
 {
-	matrix_render2();
+	auto hash = matrix_render2();
+    if (boardStateHash) {
+        if (hash == boardStateHash) {
+            // fprintf(stderr, "%lld == %lld, not rendering!\n", hash, boardStateHash);
+            return;
+        } else {
+            // fprintf(stderr, "%lld!\n", hash);
+        }
+    }
+    // printf("Hash: %d\n", hash);
+    boardStateHash = hash;
 	ws2811_render(&ledstring);
 }
 
@@ -103,4 +117,31 @@ inline void flush() {
         return flushLeft();
     }
 	matrix_clear2();
+}
+
+inline void _directDraw(int x, int y, int color) {
+    // auto i = (x * width) + y;
+    auto i = pixelMapToNP(x, y);
+    if (i > WRITEABLE_COUNT || i < 0) return; //bounds check
+    ledstring.channel[0].leds[i] = color;
+}
+
+inline void _directFlush() {
+    for (int i = 0; i < WRITEABLE_COUNT; i++) {
+        ledstring.channel[0].leds[i] = 0;
+    }
+}
+
+inline void _directFlush(int startX, int endX, int startY, int endY) {
+    for (int x = startX; x < endX; x++) {
+        for (int y = startY; y < endY; y++) {
+            auto i = (y * width) + x;
+            if (i > WRITEABLE_COUNT || i < 0) continue; //bounds check
+            ledstring.channel[0].leds[i] = 0;
+        }
+    }
+}
+
+inline void _directRender() {
+    ws2811_render(&ledstring);
 }

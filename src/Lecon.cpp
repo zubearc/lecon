@@ -25,6 +25,8 @@ extern "C" {
 
 #include "InterfaceSpotify.h"
 
+#include "WindowManager.h"
+
 //
 
 unsigned int loops = 0;
@@ -120,9 +122,12 @@ static void ctrl_c_handler(int signum) {
     running = 0;
 }
 
+bool slideIn = false;
+
 static void resumeNormalOperations(int signum) {
     printf("GOT resumeNormalOperations!\n");
     programMode = DisplayingDefault;
+    slideIn = true;
 }
 
 static void setup_handlers(void) {
@@ -247,7 +252,7 @@ void runColorTest() {
 
 
 LeconMode programMode = DisplayingDefault;
-// LeconMode programMode = (LeconMode)10;
+// LeconMode programMode = (LeconMode)13;
 
 int main(int argc, char * argv[]) {
     ws2811_return_t ret;
@@ -314,12 +319,12 @@ int main(int argc, char * argv[]) {
 
         // matrix[255 - ic] = 0x00FF0000;
 
-        // draw(255 - ic, 0xf0);
+        // draw(511 - ic, 0xf0);
 
         // txt = slurp("say.txt");
 
         ic++;
-        if (ic>255)ic=0;
+        if (ic>511)ic=0;
 
 
 
@@ -330,7 +335,7 @@ int main(int argc, char * argv[]) {
 
         if (programMode == DisplayingDefault) {
             String ts = qGetTimeString();
-            write(ts, 0x40, 32, 0, FontType::Old);
+            write(ts, 0x30, 32, 0, FontType::Old);
 
             String ds = qGetDateString();
             // printf("[%s]\n", ds.c_str());
@@ -343,15 +348,16 @@ int main(int argc, char * argv[]) {
             // // printf("[%s]\n", ds.c_str());
             // write(ds, 0x20, 4, 0, FontType::Old);
 
-            if ((loops % 10) != 0) {
+            if ((loops % 12) != 0) {
                 if (ts[0] == ' ') {
-                    draw(6 + 32, 2, 0x19);
-                    draw(6 + 32, 4, 0x19);
+                    draw(6 + 32, 2, 0x20);
+                    draw(6 + 32, 4, 0x20);
                 } else {
-                    draw(8 + 32, 2, 0x19);
-                    draw(8 + 32, 4, 0x19);
+                    draw(8 + 32, 2, 0x20);
+                    draw(8 + 32, 4, 0x20);
                 }
             }
+
             // draw(300, 0xFF);
             // draw(33, 0, 0xFF00);
             // write("              hello", 0x2000);
@@ -466,6 +472,49 @@ int main(int argc, char * argv[]) {
             // delay(4000);
         } else if (programMode == 12) {
             writeScrollable("abcdefghijklmnopqrstuvwxyz", 0x20, 20);
+        } else if (programMode == 13) {
+            wLimitWriteRegion(32, 8);
+            flush();
+            String ts = qGetTimeString();
+            write(ts, 0x40, 32, 0, FontType::Old);
+
+            String ds = qGetDateString();
+            // printf("[%s]\n", ds.c_str());
+            write(ds, 0x20, 4, 0, FontType::Old);
+
+            renderVertSlide(false, 0, WIDTH - 1, 50);
+            delay(1000);
+            renderVertSlide(true, 0, WIDTH - 1, 50);
+            delay(1000);
+            renderVertSlide2(false, 50);
+            delay(1000);
+            renderVertSlide2(true, 50);
+            delay(1000);
+            renderScrollingHighlight("~~" + ds + "~~" + ts, 0x20, 0xC0, 300, FontType::Old);
+            delay(1000);
+            renderScrollingHighlight("INVISION", 0x200000, 0xf10000, 600, FontType::Old);
+            renderScrollingHighlight("INVISION", 0xf10000, 0x200000, 600, FontType::Old);
+            delay(1000);
+            renderScrollingHighlight("LECON", 0x200000, 0xf0, 600, FontType::Old);
+            renderScrollingHighlight("LECON", 0xf0, 0x200000, 600, FontType::Old);
+            delay(1000);
+            displayFlyingArrow(false,0,0);
+            delay(1000);
+            writeFlashingTimed("HAVE A NICE DAY", 0x200000, 2500);
+            writeScrollable("        HAVE A NICE DAY - Scrolling Test", 0x20, 20);
+            wipe(1000);
+
+            if ((loops % 2) == 0) {
+                wRestoreWriteRegion();
+                programMode = DisplayingDefault;
+                writeScrollable("that's it!", 0x2000, 20);
+                delay(5000);
+            }
+        }
+
+        if (slideIn) {
+            displayFlyingArrow(false,0,0);
+            slideIn = false;
         }
 
         // qDisplayNearby();
@@ -500,14 +549,16 @@ int main(int argc, char * argv[]) {
         // String text3 = "Drive with caution and always yield to pedestrians and cyclists";
         // writeFlashing(text3, 0x400000);
 
-        matrix_render();
+        render();
+
+        // matrix_render();
 
         // drawChar(0, 0, 'A', 0xFF00);
 
-        if ((ret = ws2811_render( & ledstring)) != WS2811_SUCCESS) {
-            fprintf(stderr, "ws2811_render failed: %s\n", ws2811_get_return_t_str(ret));
-            break;
-        }
+        // if ((ret = ws2811_render( & ledstring)) != WS2811_SUCCESS) {
+        //     fprintf(stderr, "ws2811_render failed: %s\n", ws2811_get_return_t_str(ret));
+        //     break;
+        // }
 
         matrix_clear();
 finish:
