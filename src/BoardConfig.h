@@ -35,9 +35,9 @@
 #define HEIGHT                  8
 #define LED_COUNT               (WIDTH * HEIGHT)
 
-extern int width;
-extern int height;
-extern int led_count;
+extern __thread int width;
+extern __thread int height;
+extern __thread int led_count;
 
 #define WRITABLE_WIDTH width
 #define WRITABLE_HEIGHT height

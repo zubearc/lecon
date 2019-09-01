@@ -1,8 +1,8 @@
 #include "BoardConfig.h"
 
-int width = WIDTH;
-int height = HEIGHT;
-int led_count = LED_COUNT;
+__thread int width = WIDTH;
+__thread int height = HEIGHT;
+__thread int led_count = LED_COUNT;
 
 ws2811_t ledstring {
 	100,
@@ -19,7 +19,7 @@ ws2811_channel_t channel1{
 	LED_COUNT,
 	STRIP_TYPE,
 	0,
-	7,
+	25,
 	// BRIGHTNESS
 };
 
