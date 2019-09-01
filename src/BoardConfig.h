@@ -20,6 +20,7 @@
 #include "version.h"
 
 #include "ws2811.h"
+#include "Window.h"
 
 #define ARRAY_SIZE(stuff)       (sizeof(stuff) / sizeof(stuff[0]))
 
@@ -39,9 +40,9 @@ extern __thread int width;
 extern __thread int height;
 extern __thread int led_count;
 
-#define WRITABLE_WIDTH width
-#define WRITABLE_HEIGHT height
-#define WRITEABLE_COUNT led_count
+#define WRITABLE_WIDTH globalWindow.width
+#define WRITABLE_HEIGHT globalWindow.height
+#define WRITEABLE_COUNT globalWindow.size
 
 #define BRIGHTNESS 7
 // #define BRIGHTNESS 50
@@ -50,12 +51,13 @@ extern __thread int led_count;
 static int clear_on_exit = 0;
 
 extern ws2811_channel_t channel1;
-
 static ws2811_channel_t channel2{};
 
 extern ws2811_t ledstring;
 
 extern ws2811_led_t *matrix;
+
+extern __thread Window globalWindow;
 
 extern uint8_t running;
 
@@ -77,3 +79,10 @@ enum FlushRegion : int {
 };
 
 extern FlushRegion flushRegion;
+
+inline void boardWindowInit() {
+    globalWindow.width = width;
+    globalWindow.height = height;
+    globalWindow.size = led_count;
+    globalWindow.matrix = matrix;
+}

@@ -1,19 +1,21 @@
 #pragma once
 
+#include <string>
 #include <thread>
 #include <unistd.h>
+#include "Window.h"
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
-#define PIXEL_COLUMNS width
-#define PIXEL_ROWS height
-
+#define PIXEL_COLUMNS globalWindow.width
+#define PIXEL_ROWS globalWindow.height
+#define PROGMEM
 
 typedef unsigned char u8;
-#define PROGMEM
-#include <string>
-using String = std::string;
+typedef std::string String;
+
+typedef Window Window;
 
 extern unsigned int loops;
 
@@ -28,15 +30,7 @@ enum LeconMode {
 
 extern LeconMode programMode;
 
-inline unsigned int randr(unsigned int min, unsigned int max) {
-	double scaled = (double)rand() / RAND_MAX;
 
-	return (max - min + 1) * scaled + min;
-}
-
-inline void SleepMS(int milliseconds) {
-    usleep(milliseconds * 1000);
-}
-
+// Threads
 extern int childThreadPID;
 extern pthread_t childThread;

@@ -124,17 +124,22 @@ void renderScrollingHighlight(const String &text, int lowerColor, int upperColor
 	xoff = fastFloor(dif / 2);
 
     bool didOverdraw = false;
-    int oldWidth = width;
-    int oldHeight = height;
+    int oldWidth = globalWindow.width;
+    int oldHeight = globalWindow.height;
 
     if (len > PIXEL_COLUMNS) {
-        wRestoreWriteRegion();
-        len = dryWrite(text, font);
-        if (len > PIXEL_COLUMNS) {
+        xoff = 0;
+
+        if (allowOverdraw) {
+            wRestoreWriteRegion();
+            len = dryWrite(text, font);
+            if (len > PIXEL_COLUMNS) {
+                font = FontType::Old;
+            }
+            didOverdraw = true;
+        } else {
             font = FontType::Old;
         }
-        xoff = 0;
-        didOverdraw = true;
     } else {
         // fprintf(stderr, "PIXEL_COLUMNS(%d) - len(%d)=%d, floor(/ 2) = %d\n", PIXEL_COLUMNS, len, dif, xoff);
     }
@@ -213,6 +218,10 @@ void renderScrolling(const String &text, int textLen, long rgba, int until, int 
         delay(speed);
     }
     delay(1050);
+}
+
+void renderScrolling2(const String &text, int textLen, long rgba, int until, int speed, int startingIndex, FontType font) {
+    // if ()
 }
 
 void writeScrollable(const String &text, long color, int speed, FontType font) {

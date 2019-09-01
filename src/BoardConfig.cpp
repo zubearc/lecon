@@ -31,3 +31,7 @@ char lowBrightness = false;
 FontType globalDefaultFont = FontType::Old;
 
 FlushRegion flushRegion = FlushRegion::Both;
+
+
+__thread Window globalWindow;
+
