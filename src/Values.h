@@ -22,7 +22,8 @@ enum LeconMode {
     DisplayingAnimated,
     DisplayingBuffer,
     DisplayingLyrics,
-    Blocked
+    Blocked,
+    Minimal,
 };
 
 extern LeconMode programMode;
@@ -38,3 +39,4 @@ inline void SleepMS(int milliseconds) {
 }
 
 extern int childThreadPID;
+extern pthread_t childThread;

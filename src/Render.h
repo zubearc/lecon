@@ -23,10 +23,10 @@ inline long long matrix_render2(void) {
     int x, y;
     long long hash = 0;
 
-    for (x = 0; x < width; x++) {
-        for (y = 0; y < height; y++) {
-            ledstring.channel[0].leds[(y * width) + x] = matrix[y * width + x];
-            hash += (x * y) + matrix[y * width + x];
+    for (x = 0; x < WIDTH; x++) {
+        for (y = 0; y < HEIGHT; y++) {
+            ledstring.channel[0].leds[(y * WIDTH) + x] = matrix[y * WIDTH + x];
+            hash += (x * y) + matrix[y * WIDTH + x];
         }
     }
     return hash;
@@ -106,9 +106,15 @@ inline void render()
 	ws2811_render(&ledstring);
 }
 
-inline void flushLeft() {
-    for (int i = 0; i < 255; i++) {
+inline void flushLeft(int offset = 255) {
+    for (int i = 0; i < offset; i++) {
         matrix[i] = 0;
+    }
+}
+
+inline void flushRight(int offset = 255) {
+    for (int i = 0; i < offset; i++) {
+        matrix[(WRITEABLE_COUNT - 1) - i] = 0;
     }
 }
 

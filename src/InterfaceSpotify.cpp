@@ -88,7 +88,7 @@ void iSpotifyNPLTick() {
                 programMode = DisplayingDefault;
             });
             printf("PROG MODE IS NOW BLOCK!!!\n");
-            programMode = Blocked;
+            programMode = Minimal;
         } else {
             // printf("(%s != %s)\n", qLyricAuthor.c_str(), np_id.c_str());
             // writeScrollable("NP", 0x2F00, 500);

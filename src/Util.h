@@ -59,27 +59,4 @@ inline long long CurrentTimeMS() {
     return milliseconds;
 }
 
-inline void killChildThread() {
-  if (childThreadPID != 0) {
-    printf("killing %d\n", childThreadPID);
-    kill(childThreadPID, SIGKILL);
-  }
-}
-
-inline void executeOnChildThread(std::function<void(void)> execable) {
-  killChildThread();
-
-  int parentPid = getpid();
-
-  int pid = fork();
-  if (pid == 0) {
-    printf("RUNNIN FROM %d\n", childThreadPID);
-    execable();
-    kill(parentPid, SIGUSR1); // Parent Reset State
-    _exit(0);
-  } else {
-    childThreadPID = pid;
-    printf("SET CHILD PID TO %d", childThreadPID);
-  }
-    // printf("RUNNIN FROM %d\n", childThreadPID);
-}
+#include "UtilThread.h"

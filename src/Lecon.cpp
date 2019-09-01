@@ -32,6 +32,7 @@ extern "C" {
 unsigned int loops = 0;
 
 int childThreadPID = 0;
+pthread_t childThread;
 
 void matrix_render(void) {
     int x, y;
@@ -124,8 +125,9 @@ static void ctrl_c_handler(int signum) {
 
 bool slideIn = false;
 
-static void resumeNormalOperations(int signum) {
+void resumeNormalOperations(int signum) {
     printf("GOT resumeNormalOperations!\n");
+    flush();
     programMode = DisplayingDefault;
     slideIn = true;
 }
@@ -205,8 +207,13 @@ std::vector<XY> loadDisplayLitBuffer(const char *data, int length) {
 
 int hour = 0;
 
-void runInterruptableChecks() {
+// Returns didInterrupt, if so abort any current main-thread tasks
+bool runInterruptableChecks() {
     iSpotifyNPLTick();
+    if (programMode != DisplayingDefault) {
+        return true;
+    }
+    return false;
 }
 
 void runDefault() {
@@ -227,7 +234,9 @@ void runDefault() {
 
     if ((loops % 160) == 0 && hour > 6 && hour < 18) {
         qWeatherStart();
-        runInterruptableChecks();
+        if (runInterruptableChecks()) {
+            return;
+        }
         qWeatherStart();
     }
 }
@@ -251,8 +260,8 @@ void runColorTest() {
 
 
 
-LeconMode programMode = DisplayingDefault;
-// LeconMode programMode = (LeconMode)13;
+// LeconMode programMode = DisplayingDefault;
+LeconMode programMode = (LeconMode)12;
 
 int main(int argc, char * argv[]) {
     ws2811_return_t ret;
@@ -282,10 +291,12 @@ int main(int argc, char * argv[]) {
 
     setup_handlers();
 
-    if ((ret = ws2811_init( & ledstring)) != WS2811_SUCCESS) {
+    if ((ret = ws2811_init(&ledstring)) != WS2811_SUCCESS) {
         fprintf(stderr, "ws2811_init failed: %s\n", ws2811_get_return_t_str(ret));
         return ret;
     }
+
+    // ledstring.channel[0].brightness = 7;
     
     int ic = 0;
 
@@ -322,6 +333,10 @@ int main(int argc, char * argv[]) {
         // draw(511 - ic, 0xf0);
 
         // txt = slurp("say.txt");
+
+        // draw((ic & 63), 0, 0xf0);
+
+        // draw(((64 - ic) & 63), 7, 0xf0);
 
         ic++;
         if (ic>511)ic=0;
@@ -364,6 +379,26 @@ int main(int argc, char * argv[]) {
             runDefault();
             // renderScrollingHighlight(qGetTimeString(), 0x20, 0xFF, 1000);
             // writeFlashingTimed("Good Morning have a nice day", 0xFF, 9000, 0);
+        } else if (programMode == Minimal) {
+            flushRight(128);
+            String ts = qGetTimeString();
+            write(ts, 0x300000, 47, 0, FontType::Old);
+
+            if (ts[0] == ' ') {
+                draw(WIDTH - 11, 2, 0x200000);
+                draw(WIDTH - 11, 4, 0x200000);
+            } else {
+                draw(WIDTH - 9, 2, 0x200000);
+                draw(WIDTH - 9, 4, 0x200000);
+            }
+
+            // write(".", 0x300000, WIDTH - 10, 0, FontType::Old);
+
+            if ((loops % 40) == 0) {
+                runInterruptableChecks();
+            }
+
+            goto finish;
         } else if (programMode == DisplayingLyrics) {
             writeScrollable("5", 0xFF);
             delay(2000);
@@ -473,7 +508,7 @@ int main(int argc, char * argv[]) {
         } else if (programMode == 12) {
             writeScrollable("abcdefghijklmnopqrstuvwxyz", 0x20, 20);
         } else if (programMode == 13) {
-            wLimitWriteRegion(32, 8);
+            // wLimitWriteRegion(32, 8);
             flush();
             String ts = qGetTimeString();
             write(ts, 0x40, 32, 0, FontType::Old);
@@ -510,6 +545,31 @@ int main(int argc, char * argv[]) {
                 writeScrollable("that's it!", 0x2000, 20);
                 delay(5000);
             }
+        } else if (programMode == 14) {
+            // wLimitWriteRegion(32, 8);
+            // writeScrollable("THIS", 0x20, 20);
+            // renderVertSlide(false, 0, WRITABLE_WIDTH, 30);
+            // delay(1000);
+            // writeScrollable("IS", 0x20, 20);
+            // renderVertSlide(false, 0, WRITABLE_WIDTH, 30);
+            // delay(1000);
+            // writeScrollable("A", 0x20, 20);
+            // renderVertSlide(false, 0, WRITABLE_WIDTH, 30);
+            // delay(1000);
+            // writeScrollable("TEST", 0x20, 20);
+            // renderVertSlide(false, 0, WRITABLE_WIDTH, 30);
+            // delay(1000);
+            if (loops == 1) {
+                flush(); render();
+                wLimitWriteRegion(32, 8);
+                
+                String ts = qGetTimeString();
+                write(ts, 0x30, 0, 0, FontType::Old);
+                render();
+                // writeScrollable("Hello", 0x20, 20);
+            }
+            renderHorizHighlight(0xf0, 20, (loops % 2) == 0);
+            goto finish;
         }
 
         if (slideIn) {
