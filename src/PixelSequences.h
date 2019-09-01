@@ -13,7 +13,9 @@ void renderVertSlide(bool up, int low, int high, int speed = 100); //LL
 
 void renderVertSlide2(bool up, int speed = 100); //LL
 
-void renderScrollingHighlight(const String &text, int lowerColor, int upperColor, int speed, FontType font = FontType::New);
+void renderHorizHighlight(int color, int delay, bool reverse = false);
+
+void renderScrollingHighlight(const String &text, int lowerColor, int upperColor, int speed, FontType font = FontType::New, bool allowOverdraw = false);
 
 void renderLoopText(String &text, int textLen, long rgba, int speed = 100, int startingIndex = 10);
 
@@ -23,7 +25,7 @@ void writeScrollable(const String &text, long color, int speed = 200, FontType f
 
 void writeFlashing(const String &text, long color, int speed = 900, int startingIndex = 0);
 
-void writeFlashingTimed(const String &text, long color, int completeWithinMS, int startingIndex = 0);
+void writeFlashingTimed(const String &text, long color, int completeWithinMS, bool allowOverdraw = false);
 
 void displayFlyingArrow(bool rightToLeft, int startX, int endX);
 

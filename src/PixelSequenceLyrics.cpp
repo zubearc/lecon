@@ -2,6 +2,8 @@
 #include "PixelSequences.h"
 #include "Util.h"
 
+#include "WindowManager.h"
+
 std::string qLyricAuthor = "?";
 std::vector<Lyric> qLyrics;
 
@@ -13,7 +15,7 @@ bool _qLyricsInit(std::stringstream &ws) {
     qLyricAuthor = "?";
     qLyrics = {};
 
-    int color = 0;
+    int color = 0xaa;
 
     String author;
     std::getline(ws, author);
@@ -31,7 +33,7 @@ bool _qLyricsInit(std::stringstream &ws) {
     } else if (author == "3JPXFD2aJ4dHPMnGwo41bO") {
         color = 0xFF071585;
     }
-
+    
     String line;
     while (std::getline(ws, line)) {
         std::stringstream linestrm(line);
@@ -40,16 +42,18 @@ bool _qLyricsInit(std::stringstream &ws) {
         std::string lyric;
         std::getline(linestrm, lyric);
 
+        auto col = color;
+
         // Color randomizer
         if (!color) {
             auto red = randr(0x10, 100);
-            auto green = randr(0x10, 0x20);
+            auto green = randr(0x10, 100);
             auto blue = randr(0x10, 100);
-            // color = pack(0x10, blue, green, red);
-            color = 0xAA;
+            col = pack(0x10, blue, green, red);
+            // color = 0xAA;
         }
 
-        qLyrics.push_back({ std::stoi(ts), lyric, 0, color });
+        qLyrics.push_back({ std::stoi(ts), lyric, 0, col });
         // printf("LYRIC: %s $ %s\n", ts.c_str(), lyric.c_str());
     }
 
@@ -84,6 +88,7 @@ bool qLyricsInitSpotifyID(std::string spotify_id) {
 }
 
 bool qLyricsRun(int currentms) {
+    wLimitWriteRegion(WIDTH - 15, 8);
     auto idelay = qLyrics[0].msdelay - currentms;
 
     long long late_correction = 0;
@@ -114,9 +119,9 @@ bool qLyricsRun(int currentms) {
         if (lyric.line == "" && lasttext != "") {
             // writeFlashingTimed(lasttext, 0, MAX(10, display_time / 2));
             wipe(MAX(10, display_time / 2));
-            writeFlashingTimed(lyric.line, 0, MAX(10, display_time / 2));
+            writeFlashingTimed(lyric.line, 0, MAX(10, display_time / 2), true);
         } else {
-            writeFlashingTimed(lyric.line, /*0xF1*/lyric.color, MAX(10, display_time));
+            writeFlashingTimed(lyric.line, /*0xF1*/lyric.color, MAX(10, display_time), true);
         }
         lasttext = lyric.line;
 

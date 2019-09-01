@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "WindowManager.h"
 
 void renderVertSlide(bool up, int low, int high, int speed) {
     // matrix_clear2();
@@ -93,14 +94,48 @@ void renderVertSlide2(bool reverse, int speed) {
     }
 }
 
-void renderScrollingHighlight(const String &text, int lowerColor, int upperColor, int speed, FontType font) {
+void renderHorizHighlight(int color, int speed, bool reverse) {
+	if (color == 0xf0)
+	{
+		int red = randr(0, 100);
+		int green = randr(0, 100);
+		int blue = randr(0, 100);
+		color = pack(0, blue, green, red);
+	}
+
+    for (int x = 0; x < WRITABLE_WIDTH; x++) {
+        for (int y = 0; y < WRITABLE_HEIGHT; y++) {
+            auto i = pixelMapToNP(reverse ? WRITABLE_WIDTH - 1 - x : x, y);
+            auto &pix = ledstring.channel[0].leds[i];
+            if (pix != 0) {
+                pix = color;
+            }
+        }
+        _directRender();
+        delay(speed);
+    }
+}
+
+void renderScrollingHighlight(const String &text, int lowerColor, int upperColor, int speed, FontType font, bool allowOverdraw) {
     auto len = dryWrite(text, font);
     int xoff = 0;
+
+    auto dif = PIXEL_COLUMNS - len;
+	xoff = fastFloor(dif / 2);
+
+    bool didOverdraw = false;
+    int oldWidth = width;
+    int oldHeight = height;
+
     if (len > PIXEL_COLUMNS) {
-        font = FontType::Old;
+        wRestoreWriteRegion();
+        len = dryWrite(text, font);
+        if (len > PIXEL_COLUMNS) {
+            font = FontType::Old;
+        }
+        xoff = 0;
+        didOverdraw = true;
     } else {
-        auto dif = PIXEL_COLUMNS - len;
-	    xoff = fastFloor(dif / 2);
         // fprintf(stderr, "PIXEL_COLUMNS(%d) - len(%d)=%d, floor(/ 2) = %d\n", PIXEL_COLUMNS, len, dif, xoff);
     }
 
@@ -120,6 +155,10 @@ void renderScrollingHighlight(const String &text, int lowerColor, int upperColor
 
         render();
         delay(wait_time);
+    }
+
+    if (didOverdraw) {
+        wLimitWriteRegion(oldWidth, oldHeight);
     }
 
     return;
@@ -224,9 +263,7 @@ void writeFlashing(const String &text, long color, int speed, int startingIndex)
     auto timer = nullptr;
 }
 
-void writeFlashingTimed(const String &text, long color, int completeWithinMS, int startingIndex) {
-    // auto s = text.split(' ');
-    auto ti = startingIndex;
+void writeFlashingTimed(const String &text, long color, int completeWithinMS, bool allowOverdraw) {
     auto tempTime = 0;
 
 	auto count = std::count(text.begin(), text.end(), ' ') + 1;
@@ -245,7 +282,7 @@ void writeFlashingTimed(const String &text, long color, int completeWithinMS, in
 
 //
         // renderScrollingHighlight(s, 0x20, 0x2000F0, speed);
-        renderScrollingHighlight(s, 0x20, color, speed);
+        renderScrollingHighlight(s, 0x20, color, speed, FontType::New, allowOverdraw);
         continue;
 //
 
