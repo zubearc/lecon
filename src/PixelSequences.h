@@ -21,6 +21,8 @@ void renderLoopText(String &text, int textLen, long rgba, int speed = 100, int s
 
 void renderScrolling(const String &text, int textLen, long rgba, int until, int speed = 100, int startingIndex = 0, FontType font = FontType::New);
 
+void renderScrolling2(const String &text, int textLen, long rgba, int until, int speed = 100, int startingIndex = 0, FontType font = FontType::New);
+
 void writeScrollable(const String &text, long color, int speed = 200, FontType font = FontType::New);
 
 void writeFlashing(const String &text, long color, int speed = 900, int startingIndex = 0);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "BoardConfig.h"
+
 #ifdef USE_FORK
 inline void killChildThread() {
 	if (childThreadPID != 0) {
@@ -35,6 +37,7 @@ extern void resumeNormalOperations(int signum);
 
 extern "C" inline void* runChildThread(void* userData) {
 	auto execable = (std::function<void(void)>*)userData;
+	boardWindowInit();
 	(*execable)();
 	resumeNormalOperations(0);
 	return 0;

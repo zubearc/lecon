@@ -19,7 +19,7 @@ extern "C" {
 #define NUM_LEDS LED_COUNT
 #define DATA_PIN 6
 
-inline long long matrix_render2(void) {
+inline long long matrix_render2(ws2811_led_t *matrix) {
     int x, y;
     long long hash = 0;
 
@@ -32,16 +32,17 @@ inline long long matrix_render2(void) {
     return hash;
 }
 
-inline void matrix_clear2(void) {
-    int x, y;
-
-    for (y = 0; y < (height ); y++)
-    {
-        for (x = 0; x < width; x++)
-        {
-            matrix[y * width + x] = 0;
-        }
+inline void matrix_clear2(Window *window) {
+    for (int i = 0; i < window->size; i++) {
+        window->matrix[i] = 0;
     }
+    // int x, y;
+
+    // for (y = 0; y < (height ); y++) {
+    //     for (x = 0; x < width; x++) {
+    //         matrix[y * width + x] = 0;
+    //     }
+    // }
 }
 
 inline int pixelMapToNP(int x, int y) {
@@ -72,58 +73,94 @@ inline int getPixel(int x, int y) {
     return matrix[i];
 }
 
-void draw(int offset, long color);
+void draw(Window *window, int offset, long color);
 
-void draw(int x, int y, long color);
+void draw(Window *window,int x, int y, long color);
 
-char drawChar(short xoff, short yoff, char c, long rgb, FontType font = FontType::Old, bool dry = false);
+char drawChar(Window *window,short xoff, short yoff, char c, long rgb, FontType font = FontType::Old, bool dry = false);
 
-int dryWrite(const String &text, FontType font);
+int dryWrite(Window *window,const String &text, FontType font);
 
-int write(const String &text, long rgba, FontType font = FontType::Old);
+int write(Window *window,const String &text, long rgba, FontType font = FontType::Old);
 
-void write(const String &text, long rgba, int x, int y = 0, FontType font = FontType::Old);
+void write(Window *window,const String &text, long rgba, int x, int y = 0, FontType font = FontType::Old);
 
-void write(int num, long rgba);
+void write(Window *window, int num, long rgba);
 
-void writePixels(std::vector<XY> &buffer, int color, int xoff = 0);
+void writePixels(Window *window, std::vector<XY> &buffer, int color, int xoff = 0);
 
-void writePixels(std::vector<XY> &buffer, std::vector<int> colors, int xoff = 0);
+void writePixels(Window *window, std::vector<XY> &buffer, std::vector<int> colors, int xoff = 0);
 
-inline void render()
-{
-	auto hash = matrix_render2();
-    if (boardStateHash) {
-        if (hash == boardStateHash) {
-            // fprintf(stderr, "%lld == %lld, not rendering!\n", hash, boardStateHash);
-            return;
-        } else {
-            // fprintf(stderr, "%lld!\n", hash);
-        }
-    }
-    // printf("Hash: %d\n", hash);
-    boardStateHash = hash;
-	ws2811_render(&ledstring);
+// Draw
+
+inline void draw(int offset, long color) {
+    draw(&globalWindow, offset, color);
 }
 
+inline void draw(int x, int y, long color) {
+    draw(&globalWindow, x, y, color);
+}
+
+inline char drawChar(short xoff, short yoff, char c, long rgb, FontType font = FontType::Old, bool dry = false) {
+    return drawChar(&globalWindow, xoff, yoff, c, rgb, font, dry);
+}
+
+inline int dryWrite(const String &text, FontType font) {
+    return dryWrite(&globalWindow, text, font);
+}
+
+inline int write(const String &text, long rgba, FontType font = FontType::Old) {
+    return write(&globalWindow, text, rgba, font);
+}
+
+inline void write(const String &text, long rgba, int x, int y = 0, FontType font = FontType::Old) {
+    write(&globalWindow, text, rgba, x, y, font);
+
+}
+
+inline void write(int num, long rgba) {
+    write(&globalWindow, num, rgba);
+}
+
+inline void writePixels(std::vector<XY> &buffer, int color, int xoff = 0) {
+    writePixels(&globalWindow, buffer, color, xoff);
+
+}
+
+inline void writePixels(std::vector<XY> &buffer, std::vector<int> colors, int xoff = 0) {
+    writePixels(&globalWindow, buffer, colors, xoff);
+}
+
+// Redner
+
+void render(Window *window);
+
+inline void render() {
+    render(&globalWindow);
+}
+
+
+void flushLeft(Window *window, int offset = 255);
+
+void flushRight(Window *window, int offset = 255);
+
 inline void flushLeft(int offset = 255) {
-    for (int i = 0; i < offset; i++) {
-        matrix[i] = 0;
-    }
+    return flushLeft(&globalWindow, offset);
 }
 
 inline void flushRight(int offset = 255) {
-    for (int i = 0; i < offset; i++) {
-        matrix[(WRITEABLE_COUNT - 1) - i] = 0;
-    }
+    return flushRight(&globalWindow, offset);
+}
+
+inline void flush(Window *window) {
+	matrix_clear2(window);
 }
 
 inline void flush() {
-    if (flushRegion == Left) {
-        return flushLeft();
-    }
-	matrix_clear2();
+    return flush(&globalWindow);
 }
+
+// Low-Level Buffer
 
 inline void _directDraw(int x, int y, int color) {
     // auto i = (x * width) + y;

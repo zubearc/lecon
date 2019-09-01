@@ -2,14 +2,25 @@
 
 #include "BoardConfig.h"
 
+struct DrawWindow {
+    ws2811_led_t *window;
+    ws2811_led_t *global_matrix;
+};
+
+void wLimitWriteRegion(Window &window, int maxX, int maxY);
+
+void wRestoreWriteRegion(Window &window);
+
 inline void wLimitWriteRegion(int maxX, int maxY) {
-    width = maxX;
-    height = maxY;
-    led_count = width * height;
+    return wLimitWriteRegion(globalWindow, maxX, maxY);
 }
 
 inline void wRestoreWriteRegion() {
-    width = WIDTH;
-    height = HEIGHT;
-    led_count = LED_COUNT;
+    return wRestoreWriteRegion(globalWindow);
 }
+
+// DrawWindow wCreateWriteRegion(int _width, int _height);
+
+// DrawWindow wSetWriteRegion(DrawWindow &window);
+
+// void wDestroyWriteRegion(DrawWindow &window);

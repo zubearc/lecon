@@ -1,9 +1,8 @@
-#include "PixelSequenceWeather.h"
-
 #include <string>
 #include <iostream>
-
+#include "PixelSequenceWeather.h"
 #include "PixelSequences.h"
+#include "WindowManager.h"
 #include "Util.h"
 
 void qWeatherUpdate() {
@@ -40,7 +39,7 @@ void qWeatherUpdate() {
 }
 
 void qWeatherStart() {
-    flushRegion = Left;
+    wLimitWriteRegion(32, 8);
     flushLeft();
 	write("   " + qWeatherCurrentTemperature, 0xFF071585);
 	// write("NOW", 0xff0000, 16);
@@ -60,5 +59,5 @@ void qWeatherStart() {
         render();
         delay(2000);
     }
-    flushRegion = Both;
+    wRestoreWriteRegion();
 }

@@ -260,8 +260,8 @@ void runColorTest() {
 
 
 
-// LeconMode programMode = DisplayingDefault;
-LeconMode programMode = (LeconMode)12;
+LeconMode programMode = DisplayingDefault;
+// LeconMode programMode = (LeconMode)13;
 
 int main(int argc, char * argv[]) {
     ws2811_return_t ret;
@@ -286,6 +286,7 @@ int main(int argc, char * argv[]) {
     }
 
     matrix = (ws2811_led_t *) malloc(sizeof(ws2811_led_t) * width * height);
+    boardWindowInit();
 
     printf("mx:%d\n",matrix);
 
@@ -508,7 +509,7 @@ int main(int argc, char * argv[]) {
         } else if (programMode == 12) {
             writeScrollable("abcdefghijklmnopqrstuvwxyz", 0x20, 20);
         } else if (programMode == 13) {
-            // wLimitWriteRegion(32, 8);
+            wLimitWriteRegion(32, 8);
             flush();
             String ts = qGetTimeString();
             write(ts, 0x40, 32, 0, FontType::Old);

@@ -59,4 +59,14 @@ inline long long CurrentTimeMS() {
     return milliseconds;
 }
 
+inline unsigned int randr(unsigned int min, unsigned int max) {
+	double scaled = (double)rand() / RAND_MAX;
+
+	return (max - min + 1) * scaled + min;
+}
+
+inline void SleepMS(int milliseconds) {
+    usleep(milliseconds * 1000);
+}
+
 #include "UtilThread.h"
