@@ -19,7 +19,17 @@ ws2811_channel_t channel1{
 	LED_COUNT,
 	STRIP_TYPE,
 	0,
-	25,
+	30
+	// BRIGHTNESS
+};
+
+ws2811_channel_t channel2{
+	GPIO2_PIN, // gpionum
+	0, //invert
+	LED_COUNT,
+	STRIP_TYPE,
+	0,
+	30
 	// BRIGHTNESS
 };
 

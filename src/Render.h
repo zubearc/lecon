@@ -19,18 +19,9 @@ extern "C" {
 #define NUM_LEDS LED_COUNT
 #define DATA_PIN 6
 
-inline long long matrix_render2(ws2811_led_t *matrix) {
-    int x, y;
-    long long hash = 0;
+long long matrix_render2(Window *window);
 
-    for (x = 0; x < WIDTH; x++) {
-        for (y = 0; y < HEIGHT; y++) {
-            ledstring.channel[0].leds[(y * WIDTH) + x] = matrix[y * WIDTH + x];
-            hash += (x * y) + matrix[y * WIDTH + x];
-        }
-    }
-    return hash;
-}
+long long matrix_render2();
 
 inline void matrix_clear2(Window *window) {
     for (int i = 0; i < window->size; i++) {
@@ -44,6 +35,8 @@ inline void matrix_clear2(Window *window) {
     //     }
     // }
 }
+
+long long overlay(Window *window, Window *onTo);
 
 inline int pixelMapToNP(int x, int y) {
 	int pixnum = x * 8;
@@ -136,9 +129,19 @@ inline void writePixels(std::vector<XY> &buffer, std::vector<int> colors, int xo
 void render(Window *window);
 
 inline void render() {
-    render(&globalWindow);
+	auto hash = matrix_render2();
+    if (boardStateHash) {
+        if (hash == boardStateHash) {
+            // fprintf(stderr, "%lld == %lld, not rendering!\n", hash, boardStateHash);
+            return;
+        } else {
+            // fprintf(stderr, "%lld!\n", hash);
+        }
+    }
+    // printf("Hash: %d\n", hash);
+    boardStateHash = hash;
+	ws2811_render(&ledstring);
 }
-
 
 void flushLeft(Window *window, int offset = 255);
 
@@ -162,16 +165,36 @@ inline void flush() {
 
 // Low-Level Buffer
 
+inline void _directDraw(int offset, int color) {
+    if (offset > 256) {
+        ledstring.channel[1].leds[256 - offset] = color;
+    } else {
+        ledstring.channel[0].leds[offset] = color;
+    }
+
+    ledstring.channel[1].leds[offset] = color;
+}
+
+inline int _directGet(int offset) {
+    if (offset > 256) {
+        return ledstring.channel[1].leds[256 - offset];
+    } else {
+        return ledstring.channel[0].leds[offset];
+    }
+}
+
 inline void _directDraw(int x, int y, int color) {
     // auto i = (x * width) + y;
     auto i = pixelMapToNP(x, y);
     if (i > WRITEABLE_COUNT || i < 0) return; //bounds check
-    ledstring.channel[0].leds[i] = color;
+    _directDraw(i, color);
 }
 
 inline void _directFlush() {
     for (int i = 0; i < WRITEABLE_COUNT; i++) {
-        ledstring.channel[0].leds[i] = 0;
+        // ledstring.channel[0].leds[i] = 0;
+
+        _directDraw(i, 0);
     }
 }
 
@@ -180,7 +203,9 @@ inline void _directFlush(int startX, int endX, int startY, int endY) {
         for (int y = startY; y < endY; y++) {
             auto i = (y * width) + x;
             if (i > WRITEABLE_COUNT || i < 0) continue; //bounds check
-            ledstring.channel[0].leds[i] = 0;
+            // ledstring.channel[0].leds[i] = 0;
+
+            _directDraw(i, 0);
         }
     }
 }

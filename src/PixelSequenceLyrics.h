@@ -10,6 +10,7 @@ struct Lyric {
     std::string line;
     int mscompletion = 0; //<- How much MS max rendering this line can take
     int color = 0xF1;
+    int primaryColor = 0x20;
 };
 
 extern std::string qLyricAuthor;

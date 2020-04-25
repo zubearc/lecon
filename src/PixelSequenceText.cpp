@@ -74,3 +74,55 @@ bool qTextRun() {
 		delay(seq.delay);
 	}
 }
+
+int lastRun = 0;
+
+bool qNYRunCountdown() {
+			flushLeft();
+			write("5", 0x202020, 14, 0, FontType::New); render();
+			delay(1000);
+		// } else if (lastRun == 1) {
+			flushLeft();
+			write("4", 0x202020, 14, 0, FontType::New); render();
+			delay(1000);
+		// } else if (lastRun == 2) {
+			flushLeft();
+			write("3", 0x202020, 14, 0, FontType::New); render();
+			delay(1000);
+
+			flushLeft();
+			write("2", 0xf0, 14, 0, FontType::New); render();
+			delay(1000);
+
+			flushLeft();
+			write("1", 0x202020, 14, 0, FontType::New); render();
+			delay(1000);
+}
+
+bool qNewYearRun(int loops) {
+	// qNYRunCountdown();
+	// if (true) {
+
+		// if (lastRun == 0) {
+			flushLeft();
+			write("Happy", 0x30, 0, 0, FontType::New); render();
+			delay(1000);
+		// } else if (lastRun == 1) {
+			flushLeft();
+			write("New", 0x30, 0, 0, FontType::New); render();
+			delay(1000);
+		// } else if (lastRun == 2) {
+			flushLeft();
+			write("Year", 0x30, 0, 0, FontType::New); render();
+			delay(1000);
+		// }
+
+		// if (++lastRun > 2) {
+			// lastRun = 0;
+		// }
+	// }
+	
+	// writeFlashing("Happy New Year", 0xaa, 1000);
+	// render();
+	// delay(1000);
+}

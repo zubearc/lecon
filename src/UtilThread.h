@@ -2,6 +2,9 @@
 
 #include "BoardConfig.h"
 
+extern int childThreadPID;
+extern pthread_t childThread;
+
 #ifdef USE_FORK
 inline void killChildThread() {
 	if (childThreadPID != 0) {

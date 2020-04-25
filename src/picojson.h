@@ -1,3 +1,4 @@
+#pragma GCC system_header
 /*
  * Copyright 2009-2010 Cybozu Labs, Inc.
  * Copyright 2011-2014 Kazuho Oku

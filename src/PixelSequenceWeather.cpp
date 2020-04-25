@@ -6,7 +6,7 @@
 #include "Util.h"
 
 void qWeatherUpdate() {
-    system("python ../scripts/getweather.py");
+    system("/usr/bin/python ../scripts/getweather.py");
 
     auto ws = slurps("../data/weather.txt");
     
@@ -33,9 +33,9 @@ void qWeatherUpdate() {
     qWeatherCurrentTemperature = curr_temp;
     qWeatherCurrentConditions = curr_cond;
     qWeatherFuture = future;
-    // for (auto e : future) {
-    //     printf("%s\n", e.c_str());
-    // }
+    for (auto e : qWeatherFuture) {
+        printf("%s\n", e.c_str());
+    }
 }
 
 void qWeatherStart() {
@@ -46,7 +46,9 @@ void qWeatherStart() {
 	render();
 	delay(2000);
 
-	writeFlashing(qWeatherCurrentConditions, 0x276525);
+	// writeFlashing(qWeatherCurrentConditions, 0x276525);
+    writeFlashing(qWeatherCurrentConditions, 0x204500);
+
 	////  write("NOW", 0xff0000, 16);
 	//  render();
 	//  delay(2000);
@@ -56,7 +58,13 @@ void qWeatherStart() {
         write(fe, 0x2000);
         
         // write("1 HR", 0x2000, 16);
-        render();
+        printf("fe:%s\n",fe.c_str());
+
+        // TODO: fix. for some reason render() does not render because the hash is the same as last
+        // some sort of window derpiness. use forced directRender instead to workaround...
+        // render();
+        matrix_render2();
+        _directRender();
         delay(2000);
     }
     wRestoreWriteRegion();

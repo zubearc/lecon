@@ -18,13 +18,20 @@ std::string qGetDateString() {
     return s;
 }
 
-std::string qGetTimeString() {
+std::string qGetTimeString(std::string seperator = "") {
     auto now = std::chrono::system_clock::now();
     auto in_time_t = std::chrono::system_clock::to_time_t(now);
 
+    std::string f;
+    if (seperator.size()) {
+        f = "%l" + seperator + "%M %p";        
+    } else {
+        f = "%l %M %p";
+    }
+
     std::stringstream ss;
     // ss << std::put_time(std::localtime(&in_time_t), "%l~%M~%S~%p");
-    ss << std::put_time(std::localtime(&in_time_t), "%l %M %p");
+    ss << std::put_time(std::localtime(&in_time_t), f.c_str());
 
     auto s = ss.str();
     // if (s[0] == ' ') {

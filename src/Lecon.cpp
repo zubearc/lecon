@@ -24,7 +24,9 @@ extern "C" {
 #include "PixelSequenceText.h"
 
 #include "InterfaceSpotify.h"
-
+#ifdef WEBSOCKETS
+#include "InterfaceWebsocket.h"
+#endif
 #include "WindowManager.h"
 
 //
@@ -39,7 +41,12 @@ void matrix_render(void) {
 
     for (x = 0; x < width; x++) {
         for (y = 0; y < height; y++) {
-            ledstring.channel[0].leds[(y * width) + x] = matrix[y * width + x];
+            _directDraw((y * width) + x, matrix[y * width + x]);
+            // if (width > 31) {
+            //     ledstring.channel[1].leds[256 - ((y * width) + x)] = matrix[y * width + x];
+            // } else {
+            //     ledstring.channel[0].leds[(y * width) + x] = matrix[y * width + x];
+            // }
         }
     }
 }
@@ -222,8 +229,16 @@ void runDefault() {
     }
 
     if ((loops % 1060) == 0) {
-        if (hour > 6 && hour < 18)
+        if (hour > 6 && hour < 18) {
             qWeatherUpdate();
+        }
+        if (hour > 7 && hour < 18) {
+            ledstring.channel[0].brightness = 25;
+            ledstring.channel[1].brightness = 25;//patch
+        } else if (hour < 7) {
+            ledstring.channel[0].brightness = 7;
+            ledstring.channel[1].brightness = 25;//patch
+        }
         qNearbyUpdate();
     }
 
@@ -232,7 +247,7 @@ void runDefault() {
         runInterruptableChecks();
     }
 
-    if ((loops % 160) == 0 && hour > 6 && hour < 18) {
+    if ((loops % 160) == 0 && hour > 7 && hour < 17) {
         qWeatherStart();
         if (runInterruptableChecks()) {
             return;
@@ -258,10 +273,32 @@ void runColorTest() {
     // }
 }
 
+void newYearRun() {
+    auto currentTime = time(NULL);
+    // auto newYearTime = 1577836436 + 20;
+    auto newYearTime = 1577854800; //adjusted for local time
+    // auto newYearTime = 1577836800;
+
+    auto diff = newYearTime - currentTime;
+    if (diff < 11 && diff > -1) {
+        flushLeft();
+        std::string str = std::to_string(diff);
+	    write(str, 0xe0e0e0, 14, 0, FontType::New); render();
+    } else if (diff < -1 && diff > -20) {
+        writeFlashingTimed("Happy New Year", 0xa0a0a0, 0xe0e0e0, 3000, true);
+        // writeFlashing("Happy New Year", 0xaa, 1000);
+        delay(1000);
+        flush();
+    }  else if (diff < -1) {
+        if ((loops % 12) == 0) {
+            qNewYearRun(0);
+        }
+    } 
+}
 
 
 LeconMode programMode = DisplayingDefault;
-// LeconMode programMode = (LeconMode)13;
+// LeconMode programMode = (LeconMode)16;
 
 int main(int argc, char * argv[]) {
     ws2811_return_t ret;
@@ -313,6 +350,9 @@ int main(int argc, char * argv[]) {
 
     iSpotifyInit();
     // iSpotifyNPLTick();
+#ifdef WEBSOCKETS
+    iWebsocketStartBackground();
+#endif
 
     renderScrollingHighlight("INVISION", 0x200000, 0xf10000, 600, FontType::Old);
 
@@ -335,6 +375,13 @@ int main(int argc, char * argv[]) {
 
         // txt = slurp("say.txt");
 
+        // if (ledstring.channel[0].brightness != 7 && programMode != 1) {
+        //     draw(loops % 50, 7, 0xf0);
+
+        //     draw(50 - loops % 50, 7, 0xf0);
+        // }
+
+
         // draw((ic & 63), 0, 0xf0);
 
         // draw(((64 - ic) & 63), 7, 0xf0);
@@ -347,15 +394,13 @@ int main(int argc, char * argv[]) {
         // String s = " stealing TIME";
         // writeScrollable(s, 0x20);
 
-        // flush();render();        
+        // flush();render();
 
         if (programMode == DisplayingDefault) {
-            String ts = qGetTimeString();
-            write(ts, 0x30, 32, 0, FontType::Old);
 
-            String ds = qGetDateString();
-            // printf("[%s]\n", ds.c_str());
-            write(ds, 0x20, 4, 0, FontType::Old);
+
+            String ts = qGetTimeString();
+            write(ts, /*0x9F0000*/0x30, /*32*/0, 0, FontType::Old);
 
             // String ts = qGetTimeString();
             // write(ts, 0x30, 0, 0, FontType::Old);
@@ -366,13 +411,26 @@ int main(int argc, char * argv[]) {
 
             if ((loops % 12) != 0) {
                 if (ts[0] == ' ') {
-                    draw(6 + 32, 2, 0x20);
-                    draw(6 + 32, 4, 0x20);
+                    draw(6/* + 32*/, 2, 0x20);
+                    draw(6/* + 32*/, 4, 0x20);
                 } else {
-                    draw(8 + 32, 2, 0x20);
-                    draw(8 + 32, 4, 0x20);
+                    draw(8/* + 32*/, 2, 0x20);
+                    draw(8/* + 32*/, 4, 0x20);
                 }
             }
+
+            // newYearRun();
+
+            if ((loops % 26) == 0) {
+                // qNewYearRun(loops);
+                flush();
+                String ds = qGetDateString();
+                // printf("[%s]\n", ds.c_str());
+                write(ds, /*0x300000*/0x20, 4, 0, FontType::Old);
+                render();
+                delay(3000);
+            }
+
 
             // draw(300, 0xFF);
             // draw(33, 0, 0xFF00);
@@ -381,6 +439,13 @@ int main(int argc, char * argv[]) {
             // renderScrollingHighlight(qGetTimeString(), 0x20, 0xFF, 1000);
             // writeFlashingTimed("Good Morning have a nice day", 0xFF, 9000, 0);
         } else if (programMode == Minimal) {
+
+            if ((loops % 40) == 0) {
+                runInterruptableChecks();
+            }
+
+            goto finish; // PATCH <- because right 8 LEDs are broken !!
+
             flushRight(128);
             String ts = qGetTimeString();
             write(ts, 0x300000, 47, 0, FontType::Old);
@@ -395,9 +460,7 @@ int main(int argc, char * argv[]) {
 
             // write(".", 0x300000, WIDTH - 10, 0, FontType::Old);
 
-            if ((loops % 40) == 0) {
-                runInterruptableChecks();
-            }
+            
 
             goto finish;
         } else if (programMode == DisplayingLyrics) {
@@ -411,7 +474,7 @@ int main(int argc, char * argv[]) {
             delay(1000);
             writeScrollable("1", 0xFF);
             delay(1000);
-            qLyricsRun();
+            // qLyricsRun();
         } else if (programMode == DisplayingBuffer) {
             auto bufloc = slurp("../data/buffer.bin");
             auto buf = loadDisplayLitBuffer(bufloc.data(), bufloc.length());
@@ -507,8 +570,11 @@ int main(int argc, char * argv[]) {
             render();
             // delay(4000);
         } else if (programMode == 12) {
-            writeScrollable("abcdefghijklmnopqrstuvwxyz", 0x20, 20);
+            // writeScrollable("abcdefghijklmnopqrstuvwxyz", 0x20, 20);
+            writeScrollable("...Flood Watch Remains In Effect Through Late Monday Night...\nThe Flood Watch Continues For\n* A Portion Of Northwest Washington...Including The Following\nCounty...Mason.\n* Through Late Friday Night\n* A Strong Warm Front Will Bring Heavy Rain To The Olympics\nTonight Through Thursday Night. The Heavy Rain Will Push The\nSkokomish River Above Flood Stage Today...And Major Flooding Is\nPossible.\n* A Flood Warning Is In Effect For The Skokomish River. The Flood\nWatch Remains In Effect For Mason County For The Possibility Of\nAreal Flooding Associated With A Major Flood.\n", 0xA0A0, 40);
         } else if (programMode == 13) {
+            // writeScrollable("        HAVE A NICE DAY - Scrolling Test", 0x20, 20);
+
             wLimitWriteRegion(32, 8);
             flush();
             String ts = qGetTimeString();
@@ -571,6 +637,47 @@ int main(int argc, char * argv[]) {
             }
             renderHorizHighlight(0xf0, 20, (loops % 2) == 0);
             goto finish;
+        } else if (programMode == 15) {
+
+            // flush();
+            // writeFlashing("Swipe__Again Here", 0x20, 400);
+            // // writeScrollable("Swipe Again Here", 0x20, 60, FontType::Old);
+            // // write("", 0x20, 14);
+            // render();
+            // delay(1000);
+
+
+            // flush();
+            // write("GO", 0x2000);
+            // write("until 19-12", 0x20, 13);
+            // render();
+            // delay(1000);
+            // goto finish;
+
+            writeScrollable("Just Used", 0x20, 20);
+            delay(1000);
+            writeScrollable("$2.75 REMAIN", 0x20, 20, FontType::Old);
+            delay(1000);
+            writeScrollable("EXPIRED 2-19", 0x20, 20, FontType::Old);
+            delay(1000);
+            writeScrollable("1 RIDE LEFT", 0x20, 20, FontType::Old);
+            delay(2000);
+            flush();
+            write("GO", 0x2000);
+            write("until 19-12", 0x20, 13);
+            render();
+            delay(2000);
+            writeScrollable("See Agent", 0x20, 20);
+            delay(2000);
+        } else if (programMode == 16) {
+
+            write("((", /*0x9F0000*/0x300000, /*32*/0, 0, FontType::Old);
+            write("30", /*0x9F0000*/0x30, /*32*/5, 0, FontType::Old);
+            // draw(0, 1, 0x300000);
+            // draw(0, 2, 0x300000);
+            // draw(0, 3, 0x300000);
+            // draw(0, 4, 0x300000);
+            // draw(0, 5, 0x300000);
         }
 
         if (slideIn) {

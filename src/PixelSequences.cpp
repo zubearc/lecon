@@ -13,7 +13,8 @@ void renderVertSlide(bool up, int low, int high, int speed) {
         if (i < 0 || i > WRITEABLE_COUNT) {
             continue; //bounds check
         }
-        ledstring.channel[0].leds[i] = 0;
+        _directDraw(i, 0);
+        // ledstring.channel[0].leds[i] = 0;
     }
 
     for (int a = 0; a < WRITABLE_HEIGHT; a++) {
@@ -39,7 +40,13 @@ void renderVertSlide(bool up, int low, int high, int speed) {
                     continue;
                 }
 
-                ledstring.channel[0].leds[n] = matrix[t];
+                _directDraw(n, matrix[t]);
+
+                // if (n > 256) {
+                //     ledstring.channel[1].leds[256 - n] = matrix[t];
+                // } else {
+                //     ledstring.channel[0].leds[n] = matrix[t];
+                // }
             }
         }
 
@@ -50,7 +57,8 @@ void renderVertSlide(bool up, int low, int high, int speed) {
 
 void renderVertSlide2(bool reverse, int speed) {
     for (int i = 0; i < WRITEABLE_COUNT; i++) {
-        ledstring.channel[0].leds[i] = 0;
+        // ledstring.channel[0].leds[i] = 0;
+        _directDraw(i, 0);
     }
 
     auto halfWidth = fastFloor(WRITABLE_WIDTH / 2);
@@ -83,7 +91,13 @@ void renderVertSlide2(bool reverse, int speed) {
                     continue;
                 }
 
-                ledstring.channel[0].leds[n] = matrix[t];
+                _directDraw(n, matrix[t]);
+
+                // if (n > 256) {
+                //     ledstring.channel[1].leds[256 - n] = matrix[t];
+                // } else {
+                //     ledstring.channel[0].leds[n] = matrix[t];
+                // }
             }
         }
     //     // return;
@@ -106,10 +120,19 @@ void renderHorizHighlight(int color, int speed, bool reverse) {
     for (int x = 0; x < WRITABLE_WIDTH; x++) {
         for (int y = 0; y < WRITABLE_HEIGHT; y++) {
             auto i = pixelMapToNP(reverse ? WRITABLE_WIDTH - 1 - x : x, y);
-            auto &pix = ledstring.channel[0].leds[i];
+
+            // auto channel = i > 256 ? 1 : 0;
+            // auto inew = i > 256 ? 256 - i : i;
+
+            auto pix = _directGet(i);
             if (pix != 0) {
-                pix = color;
+                _directDraw(i, color);
             }
+
+            // auto &pix = ledstring.channel[channel].leds[inew];
+            // if (pix != 0) {
+            //     pix = color;
+            // }
         }
         _directRender();
         delay(speed);
@@ -149,6 +172,13 @@ void renderScrollingHighlight(const String &text, int lowerColor, int upperColor
     for (int i = 0; i < text.size(); i++) {
         flush();
         auto _c = text[i];
+
+        if (upperColor == 0xf0f0) {
+            auto red = randr(0x10, 100);
+            auto green = randr(0x10, 100);
+            auto blue = randr(0x10, 100);
+            upperColor = pack(0x10, blue, green, red);
+        }
 
         auto x = xoff;
         auto lwlen = 0;
@@ -220,8 +250,34 @@ void renderScrolling(const String &text, int textLen, long rgba, int until, int 
     delay(1050);
 }
 
-void renderScrolling2(const String &text, int textLen, long rgba, int until, int speed, int startingIndex, FontType font) {
-    // if ()
+void renderScrolling2(const String &text, long rgba, int speed, int startingIndex, FontType font) {
+    
+    auto len = dryWrite(text, font);
+
+    Window win = wCreateWindow(HEIGHT, len, globalWindow.xOffset, globalWindow.yOffset);
+
+    write(&win, text, rgba, font);
+
+    // win.xOffset = -16;
+    // render(&win);
+    // delay(1000);
+
+    auto running = true;
+
+    while (running) {
+        _directFlush();
+        // flush(&win);
+
+        win.xOffset -= 1;
+
+        if (win.xOffset <= ((globalWindow.width) - len)) {
+            running = false;
+        }
+
+        render(&win);
+        delay(speed);
+    }
+    wDestroyWindow(win);
 }
 
 void writeScrollable(const String &text, long color, int speed, FontType font) {
@@ -233,7 +289,8 @@ void writeScrollable(const String &text, long color, int speed, FontType font) {
     // delay(1000);
     // return;
     if (w > PIXEL_COLUMNS) {
-        return renderScrolling(text, text.length(), color, w, speed, 0, font);
+        // return renderScrolling(text, text.length(), color, w, speed, 0, font);
+        return renderScrolling2(text, color, speed, 0, font);
     } else {
         render();
     }
@@ -250,7 +307,7 @@ void writeFlashing(const String &text, long color, int speed, int startingIndex)
     while (splitString(' ', text, pos, s)) {
         flush();
 		// Serial.println(s);
-        auto len = write(s, color);
+        auto len = write(s, color, FontType::New);
 
         if (len > PIXEL_COLUMNS) {
             flush();
@@ -272,7 +329,7 @@ void writeFlashing(const String &text, long color, int speed, int startingIndex)
     auto timer = nullptr;
 }
 
-void writeFlashingTimed(const String &text, long color, int completeWithinMS, bool allowOverdraw) {
+void writeFlashingTimed(const String &text, long primaryColor, long color, int completeWithinMS, bool allowOverdraw) {
     auto tempTime = 0;
 
 	auto count = std::count(text.begin(), text.end(), ' ') + 1;
@@ -291,7 +348,7 @@ void writeFlashingTimed(const String &text, long color, int completeWithinMS, bo
 
 //
         // renderScrollingHighlight(s, 0x20, 0x2000F0, speed);
-        renderScrollingHighlight(s, 0x20, color, speed, FontType::New, allowOverdraw);
+        renderScrollingHighlight(s, primaryColor, color, speed, FontType::New, allowOverdraw);
         continue;
 //
 

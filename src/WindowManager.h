@@ -19,6 +19,12 @@ inline void wRestoreWriteRegion() {
     return wRestoreWriteRegion(globalWindow);
 }
 
+Window wCreateWindow(int _height, int _width, int x = 0, int y = 0);
+Window* wCreateWindowPtr(int _height, int _width, int x = 0, int y = 0);
+
+void wDestroyWindow(Window &window);
+void wDestroyWindowPtr(Window *window);
+
 // DrawWindow wCreateWriteRegion(int _width, int _height);
 
 // DrawWindow wSetWriteRegion(DrawWindow &window);

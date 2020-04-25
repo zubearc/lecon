@@ -90,6 +90,7 @@ void iSpotifyNPLTick() {
             printf("PROG MODE IS NOW BLOCK!!!\n");
             programMode = Minimal;
         } else {
+            fprintf(stderr, "NP unknown, %s", np_id.c_str());
             // printf("(%s != %s)\n", qLyricAuthor.c_str(), np_id.c_str());
             // writeScrollable("NP", 0x2F00, 500);
             // for (int i = 16; i < 48; i++) {
@@ -99,7 +100,7 @@ void iSpotifyNPLTick() {
             //     //     draw(i, 7, 0x2000);
             // }
             flushLeft();
-            write("NP", 0x2000);
+            write(np_name, 0x2000);
             render();
             delay(1000);
             // writeScrollable(np_name, 0x2F00, 100);

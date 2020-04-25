@@ -21,13 +21,18 @@ void renderLoopText(String &text, int textLen, long rgba, int speed = 100, int s
 
 void renderScrolling(const String &text, int textLen, long rgba, int until, int speed = 100, int startingIndex = 0, FontType font = FontType::New);
 
-void renderScrolling2(const String &text, int textLen, long rgba, int until, int speed = 100, int startingIndex = 0, FontType font = FontType::New);
+void renderScrolling2(const String &text, long rgba, int speed = 100, int startingIndex = 0, FontType font = FontType::New);
 
 void writeScrollable(const String &text, long color, int speed = 200, FontType font = FontType::New);
 
 void writeFlashing(const String &text, long color, int speed = 900, int startingIndex = 0);
 
-void writeFlashingTimed(const String &text, long color, int completeWithinMS, bool allowOverdraw = false);
+
+void writeFlashingTimed(const String &text, long colorPrimary, long colorSecondary, int completeWithinMS, bool allowOverdraw = false);
+
+inline void writeFlashingTimed(const String &text, long color, int completeWithinMS, bool allowOverdraw = false) {
+    return writeFlashingTimed(text, 0x20, color, completeWithinMS, allowOverdraw);
+}
 
 void displayFlyingArrow(bool rightToLeft, int startX, int endX);
 

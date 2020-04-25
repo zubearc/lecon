@@ -6,3 +6,5 @@
 bool qTextInit();
 
 bool qTextRun();
+
+bool qNewYearRun(int loops);

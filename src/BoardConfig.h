@@ -27,12 +27,13 @@
 // defaults for cmdline options
 #define TARGET_FREQ             WS2811_TARGET_FREQ
 #define GPIO_PIN                18
+#define GPIO2_PIN               13
 #define DMA                     10
 //#define STRIP_TYPE            WS2811_STRIP_RGB		// WS2812/SK6812RGB integrated chip+leds
 #define STRIP_TYPE              WS2811_STRIP_GBR		// WS2812/SK6812RGB integrated chip+leds
 //#define STRIP_TYPE            SK6812_STRIP_RGBW		// SK6812RGBW (NOT SK6812RGB)
 
-#define WIDTH                   64
+#define WIDTH                   31
 #define HEIGHT                  8
 #define LED_COUNT               (WIDTH * HEIGHT)
 
@@ -51,7 +52,7 @@ extern __thread int led_count;
 static int clear_on_exit = 0;
 
 extern ws2811_channel_t channel1;
-static ws2811_channel_t channel2{};
+extern ws2811_channel_t channel2;
 
 extern ws2811_t ledstring;
 
