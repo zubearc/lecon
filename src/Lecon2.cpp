@@ -1,21 +1,8 @@
-#if 0
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <stdint.h>
-#include <stdlib.h>
+#include "Lecon2.h"
 
-extern "C" {
-#include <clk.h>
-#include <gpio.h>
-#include <dma.h>
-#include <pwm.h>
-#include <version.h>
-#include <ws2811.h>
+#include "LeconConfig.h"
 
-#include "BoardConfig.h"
-}
-#include "Render.h"
+#include "Render2.h"
 #include "PixelSequences.h"
 #include "PixelSequenceTime.h"
 #include "PixelSequenceAlert.h"
@@ -25,189 +12,14 @@ extern "C" {
 
 #include "InterfaceSpotify.h"
 
-#include "WindowManager.h"
+#ifdef _WS2812
+#include "LeconWS2812.h"
+#endif
 
-//
-
-unsigned int loops = 0;
-
-int childThreadPID = 0;
-pthread_t childThread;
-
-void matrix_render(void) {
-    int x, y;
-
-    for (x = 0; x < width; x++) {
-        for (y = 0; y < height; y++) {
-            ledstring.channel[0].leds[(y * width) + x] = matrix[y * width + x];
-        }
-    }
-}
-
-void matrix_raise(void) {
-    int x, y;
-
-    for (y = 0; y < (height - 1); y++) {
-        for (x = 0; x < width; x++) {
-            // This is for the 8x8 Pimoroni Unicorn-HAT where the LEDS in subsequent
-            // rows are arranged in opposite directions
-            matrix[y * width + x] = matrix[(y + 1) * width + width - x - 1];
-        }
-    }
-}
-
-void matrix_clear(void) {
-    int x, y;
-
-    for (y = 0; y < (height); y++) {
-        for (x = 0; x < width; x++) {
-            matrix[y * width + x] = 0;
-        }
-    }
-}
-
-int dotspos[] = {
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-};
-ws2811_led_t dotcolors[] = {
-    0x00200000, // red
-    0x00201000, // orange
-    0x00202000, // yellow
-    0x00002000, // green
-    0x00002020, // lightblue
-    0x00000020, // blue
-    0x00100010, // purple
-    0x00200010, // pink
-};
-
-ws2811_led_t dotcolors_rgbw[] = {
-    0x00200000, // red
-    0x10200000, // red + W
-    0x00002000, // green
-    0x10002000, // green + W
-    0x00000020, // blue
-    0x10000020, // blue + W
-    0x00101010, // white
-    0x10101010, // white + W
-
-};
-
-void matrix_bottom(void) {
-    int i;
-
-    for (i = 0; i < (int)(ARRAY_SIZE(dotspos)); i++) {
-        dotspos[i]++;
-        if (dotspos[i] > (width - 1)) {
-            dotspos[i] = 0;
-        }
-
-        if (ledstring.channel[0].strip_type == SK6812_STRIP_RGBW) {
-            matrix[dotspos[i] + (height - 1) * width] = dotcolors_rgbw[i];
-        } else {
-            matrix[dotspos[i] + (height - 1) * width] = dotcolors[i];
-        }
-    }
-}
-
-//
-
-static void ctrl_c_handler(int signum) {
-    (void)(signum);
-    running = 0;
-}
-
+bool running = true;
+int hour;
 bool slideIn = false;
 
-void resumeNormalOperations(int signum) {
-    printf("GOT resumeNormalOperations!\n");
-    flush();
-    programMode = DisplayingDefault;
-    slideIn = true;
-}
-
-static void setup_handlers(void) {
-    struct sigaction sa = {
-        ctrl_c_handler,
-    };
-
-    sigaction(SIGINT, & sa, NULL);
-    sigaction(SIGTERM, & sa, NULL);
-
-    struct sigaction resumeAction = {
-        resumeNormalOperations
-    };
-
-    sigaction(SIGUSR1, &resumeAction, NULL);
-}
-
-//
-
-int main2(int argc, char * argv[]) {
-    if (argc < 2) {
-        fprintf(stdout, "Usage: %s number\n", argv[0]);
-        return 1;
-    }
-
-    double inputValue = atof(argv[1]);
-    double outputValue = sqrt(inputValue);
-    fprintf(stdout, "The square root of %g is %g\n", inputValue, outputValue);
-    return 0;
-}
-
-void qDisplayNearby() {
-    write("NEARBY!", 0x4040);
-    render();
-
-    delay(2000);
-
-    String tx = "Report of Shots Fired";
-    writeFlashing(tx, 0x104040);
-
-    String tx1 = " 99 PCT";
-    writeScrollable(tx1, 0x4010);
-    // render();
-
-    delay(1000);
-
-    String tx2 = "1776 Ave";
-    writeScrollable(tx2, 0x40, 100);
-
-    delay(1000);
-
-    String tx3 = " 3M ago";
-    writeScrollable(tx3, 0x4010);
-    // render();
-
-    delay(1000);
-}
-
-void qDisplayAmber() {
-    String tx = "DANGER!";
-    writeScrollable(tx, 0xFF);
-}
-
-// Loads 16x16 pixels
-std::vector<XY> loadDisplayLitBuffer(const char *data, int length) {
-    if ((length % 2) != 0) return {};
-    std::vector<XY> buffer;
-    for (int i = 0; i < length; i+=2) {
-        auto c = data[i];
-        auto e = data[i + 1];
-        buffer.push_back({c, e});
-    }
-    return buffer;
-}
-
-int hour = 0;
-
-// Returns didInterrupt, if so abort any current main-thread tasks
 bool runInterruptableChecks() {
     iSpotifyNPLTick();
     if (programMode != DisplayingDefault) {
@@ -241,121 +53,50 @@ void runDefault() {
     }
 }
 
-void runLyric() {
-
+void resumeNormalOperations(int signum) {
+    printf("GOT resumeNormalOperations!\n");
+    globalWindow->clear();
+    programMode = DisplayingDefault;
+    slideIn = true;
 }
 
-void runColorTest() {
-    for (int i = 0; i < 200; i++) {
-        // auto red = 5 * i;
-        // auto green = 2 * red;
-        // auto blue = (loops%100);
-        draw(i, (loops*100) + i);
-    }
-    render();
-    // for (int x = 0; x < 30; x++) {
-    //     draw(x, 0, 0x20 * x);
-    // }
-}
-
-
-
-LeconMode programMode = DisplayingDefault;
-// LeconMode programMode = (LeconMode)13;
-
-int main(int argc, char * argv[]) {
-    ws2811_return_t ret;
-
-    loops = 0;
-
-    //sprintf(VERSION, "%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO);
-
-    //parseargs(argc, argv, &ledstring);
-
-    if (argc > 1) {
-        if (strcmp(argv[1], "LYRIC") == 0) {
-            programMode = DisplayingLyrics;
-            printf("Lyric Mode\n");
-
-            programMode = DisplayingLyrics;
-        }
-        // for (int i =  0; i < argc; i++) {
-        //     auto arg = argv[i];
-        //     printf("arg[%d] = %s\n", i, arg);
-        // }
-    }
-
-    matrix = (ws2811_led_t *) malloc(sizeof(ws2811_led_t) * width * height);
-    boardWindowInit();
-
-    printf("mx:%d\n",matrix);
-
-    setup_handlers();
-
-    if ((ret = ws2811_init(&ledstring)) != WS2811_SUCCESS) {
-        fprintf(stderr, "ws2811_init failed: %s\n", ws2811_get_return_t_str(ret));
-        return ret;
-    }
-
-    // ledstring.channel[0].brightness = 7;
-    
-    int ic = 0;
-
-    String txt = slurp("say.txt");
-    printf("slurp'ed %d bytes\n", txt.length());
+void run() {
+	initBoard(HEIGHT, WIDTH);
 
     qWeatherUpdate();
     qNearbyUpdate();
     qTextInit();
     qLyricsInit();
 
-    // printf("qLA: %s\n", qLyricsGetAuthor().c_str());
-
     iSpotifyInit();
     // iSpotifyNPLTick();
 
     renderScrollingHighlight("INVISION", 0x200000, 0xf10000, 600, FontType::Old);
 
+    int ic = 0;
 
     while (running) {
         loops++;
 
         hour = getCurrentHour();
 
-        //    matrix_raise();
-        //    matrix_bottom();
-
-        // matrix[ic] = 0x00FF0000;
-
-        // draw(ic, 0xf0);
-
-        // matrix[255 - ic] = 0x00FF0000;
-
-        // draw(511 - ic, 0xf0);
-
-        // txt = slurp("say.txt");
-
-        // draw((ic & 63), 0, 0xf0);
-
-        // draw(((64 - ic) & 63), 7, 0xf0);
-
         ic++;
-        if (ic>511)ic=0;
-
-
+        if (ic > 511)ic = 0;
 
         // String s = " stealing TIME";
         // writeScrollable(s, 0x20);
 
-        // flush();render();        
+        // flush();render();
+
+        globalWindow->clear();
 
         if (programMode == DisplayingDefault) {
             String ts = qGetTimeString();
-            write(ts, 0x30, 32, 0, FontType::Old);
+            Render::write(globalWindow, ts, 0x30, 32, 0, FontType::Old);
 
             String ds = qGetDateString();
             // printf("[%s]\n", ds.c_str());
-            write(ds, 0x20, 4, 0, FontType::Old);
+            Render::write(globalWindow, ds, 0x20, 4, 0, FontType::Old);
 
             // String ts = qGetTimeString();
             // write(ts, 0x30, 0, 0, FontType::Old);
@@ -366,11 +107,11 @@ int main(int argc, char * argv[]) {
 
             if ((loops % 12) != 0) {
                 if (ts[0] == ' ') {
-                    draw(6 + 32, 2, 0x20);
-                    draw(6 + 32, 4, 0x20);
+                    Render::draw(globalWindow, 6 + 32, 2, 0x20);
+                    Render::draw(globalWindow, 6 + 32, 4, 0x20);
                 } else {
-                    draw(8 + 32, 2, 0x20);
-                    draw(8 + 32, 4, 0x20);
+                    Render::draw(globalWindow, 8 + 32, 2, 0x20);
+                    Render::draw(globalWindow, 8 + 32, 4, 0x20);
                 }
             }
 
@@ -381,16 +122,16 @@ int main(int argc, char * argv[]) {
             // renderScrollingHighlight(qGetTimeString(), 0x20, 0xFF, 1000);
             // writeFlashingTimed("Good Morning have a nice day", 0xFF, 9000, 0);
         } else if (programMode == Minimal) {
-            flushRight(128);
+            //flushRight(128);
             String ts = qGetTimeString();
-            write(ts, 0x300000, 47, 0, FontType::Old);
+            Render::write(globalWindow, ts, 0x300000, 47, 0, FontType::Old);
 
             if (ts[0] == ' ') {
-                draw(WIDTH - 11, 2, 0x200000);
-                draw(WIDTH - 11, 4, 0x200000);
+                Render::draw(globalWindow, WIDTH - 11, 2, 0x200000);
+                Render::draw(globalWindow, WIDTH - 11, 4, 0x200000);
             } else {
-                draw(WIDTH - 9, 2, 0x200000);
-                draw(WIDTH - 9, 4, 0x200000);
+                Render::draw(globalWindow, WIDTH - 9, 2, 0x200000);
+                Render::draw(globalWindow, WIDTH - 9, 4, 0x200000);
             }
 
             // write(".", 0x300000, WIDTH - 10, 0, FontType::Old);
@@ -400,7 +141,8 @@ int main(int argc, char * argv[]) {
             }
 
             goto finish;
-        } else if (programMode == DisplayingLyrics) {
+        }
+        else if (programMode == DisplayingLyrics) {
             writeScrollable("5", 0xFF);
             delay(2000);
             writeScrollable("4", 0xFF);
@@ -412,10 +154,11 @@ int main(int argc, char * argv[]) {
             writeScrollable("1", 0xFF);
             delay(1000);
             qLyricsRun();
-        } else if (programMode == DisplayingBuffer) {
-            auto bufloc = slurp("../data/buffer.bin");
+        }
+        else if (programMode == DisplayingBuffer) {
+            /*auto bufloc = slurp("../data/buffer.bin");
             auto buf = loadDisplayLitBuffer(bufloc.data(), bufloc.length());
-            writePixels(buf, 0x2F0000);
+            writePixels(buf, 0x2F0000);*/
         } else if (programMode == Blocked) {
             if ((loops % 40) == 0) {
                 runInterruptableChecks();
@@ -459,10 +202,10 @@ int main(int argc, char * argv[]) {
             // render();
             // delay(2000);
 
-            flush();
+            Render::flush();
 
-            std::vector<XY> buf = {{5,2},{4,2},{3,2},{2,2},{1,2},{2,1},{3,0},{2,3},{3,4},{6,2},};
-            std::vector<int> cols = {16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680};
+            std::vector<XY> buf = { {5,2},{4,2},{3,2},{2,2},{1,2},{2,1},{3,0},{2,3},{3,4},{6,2}, };
+            std::vector<int> cols = { 16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680 };
 
             // std::vector<int> cols = {16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680,16711680};
             // std::vector<int> cols = {65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280,65280};
@@ -478,13 +221,13 @@ int main(int argc, char * argv[]) {
 
             // writePixels(buf3, 0x200000, 30);
 
-            write("\x83", 0x2000);
+            Render::write(globalWindow, "\x83", 0x2000);
 
-            write("MSFT", 0xD00000, 8);
+            Render::write(globalWindow, "MSFT", 0xD00000, 8);
 
-            write("-", 0x200000, 34);
-            write("12.9", 0x20, 38);
-            write("%", 0x200000, 52);
+            Render::write(globalWindow, "-", 0x200000, 34);
+            Render::write(globalWindow, "12.9", 0x20, 38);
+            Render::write(globalWindow, "%", 0x200000, 52);
 
             renderVertSlide(false, 0, 32);
             // renderVertSlide2(false, 50);
@@ -495,28 +238,28 @@ int main(int argc, char * argv[]) {
             // writeScrollable("6  177.BBR   3", 0x20);
             // writeScrollable(txt, 0x20, 30);
         } else if (programMode == 11) {
-            flush();
+            Render::flush();
 
-            write("6", 0x2000);
+            Render::write(globalWindow, "6", 0x2000);
 
-            write("177.BBR", 0x20, 10);
+            Render::write(globalWindow, "177.BBR", 0x20, 10);
 
 
-            write("3 M", 0x20, 50);
+            Render::write(globalWindow, "3 M", 0x20, 50);
 
-            render();
+            Render::render();
             // delay(4000);
         } else if (programMode == 12) {
             writeScrollable("abcdefghijklmnopqrstuvwxyz", 0x20, 20);
         } else if (programMode == 13) {
-            wLimitWriteRegion(32, 8);
-            flush();
+            //wLimitWriteRegion(32, 8);
+            Render::flush();
             String ts = qGetTimeString();
-            write(ts, 0x40, 32, 0, FontType::Old);
+            Render::write(globalWindow, ts, 0x40, 32, 0, FontType::Old);
 
             String ds = qGetDateString();
             // printf("[%s]\n", ds.c_str());
-            write(ds, 0x20, 4, 0, FontType::Old);
+            Render::write(globalWindow, ds, 0x20, 4, 0, FontType::Old);
 
             renderVertSlide(false, 0, WIDTH - 1, 50);
             delay(1000);
@@ -534,14 +277,14 @@ int main(int argc, char * argv[]) {
             renderScrollingHighlight("LECON", 0x200000, 0xf0, 600, FontType::Old);
             renderScrollingHighlight("LECON", 0xf0, 0x200000, 600, FontType::Old);
             delay(1000);
-            displayFlyingArrow(false,0,0);
+            displayFlyingArrow(false, 0, 0);
             delay(1000);
             writeFlashingTimed("HAVE A NICE DAY", 0x200000, 2500);
             writeScrollable("        HAVE A NICE DAY - Scrolling Test", 0x20, 20);
             wipe(1000);
 
             if ((loops % 2) == 0) {
-                wRestoreWriteRegion();
+                //wRestoreWriteRegion();
                 programMode = DisplayingDefault;
                 writeScrollable("that's it!", 0x2000, 20);
                 delay(5000);
@@ -561,12 +304,12 @@ int main(int argc, char * argv[]) {
             // renderVertSlide(false, 0, WRITABLE_WIDTH, 30);
             // delay(1000);
             if (loops == 1) {
-                flush(); render();
-                wLimitWriteRegion(32, 8);
-                
+                Render::flush(); Render::render();
+                //wLimitWriteRegion(32, 8);
+
                 String ts = qGetTimeString();
-                write(ts, 0x30, 0, 0, FontType::Old);
-                render();
+                Render::write(globalWindow, ts, 0x30, 0, 0, FontType::Old);
+                Render::render();
                 // writeScrollable("Hello", 0x20, 20);
             }
             renderHorizHighlight(0xf0, 20, (loops % 2) == 0);
@@ -574,66 +317,68 @@ int main(int argc, char * argv[]) {
         }
 
         if (slideIn) {
-            displayFlyingArrow(false,0,0);
+            displayFlyingArrow(false, 0, 0);
             slideIn = false;
         }
 
-        // qDisplayNearby();
-        // qDisplayAmber();
-
-        // printf("started weather.\n");
-        // qWeatherStart();
-        // printf("did weather.\n");
-
-        // run_disco();
-
-        // run_text();
-
-        // String tx = "hello world of cookies";
-        // writeFlashing(tx, 0x20);
-
-        // std::stringstream strm(txt);
-
-        // String buf;
-        // while (std::getline(strm, buf)) {
-        //     writeFlashing(buf, 0x20);            
-        // }
-
-        // writeFlashing(txt, 0xf0);
-        // run_weather();
-
-        // String text = "Due to recent severe heat, traffic signals without power may be present in various parts of NYC";
-        // // renderLoopText(text, text.length(), 0xf0);
-        // writeFlashing(text, 0x400000);
-        // String text2 = "Drivers should treat impacted intersections as an all-way stop, except when directed by NYPD";
-        // writeFlashing(text2, 0x400000);
-        // String text3 = "Drive with caution and always yield to pedestrians and cyclists";
-        // writeFlashing(text3, 0x400000);
-
-        render();
-
-        // matrix_render();
-
-        // drawChar(0, 0, 'A', 0xFF00);
-
-        // if ((ret = ws2811_render( & ledstring)) != WS2811_SUCCESS) {
-        //     fprintf(stderr, "ws2811_render failed: %s\n", ws2811_get_return_t_str(ret));
-        //     break;
-        // }
-
-        matrix_clear();
+        screen->set(0, 0, 1);
+        Render::render();
 finish:
         // 15 frames /sec
+#ifdef _WIN32
+        Sleep(200);
+#else
         usleep(1000000 / 5);
+#endif
     }
+
+}
+
+
+#ifdef _WS2812
+int main(int argc, char* argv[]) {
+    ws2811_return_t ret;
+
+    loops = 0;
+
+    //sprintf(VERSION, "%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO);
+
+    //parseargs(argc, argv, &ledstring);
+
+    if (argc > 1) {
+        if (strcmp(argv[1], "LYRIC") == 0) {
+            programMode = DisplayingLyrics;
+            printf("Lyric Mode\n");
+
+            programMode = DisplayingLyrics;
+        }
+        // for (int i =  0; i < argc; i++) {
+        //     auto arg = argv[i];
+        //     printf("arg[%d] = %s\n", i, arg);
+        // }
+    }
+
+    matrix = (ws2811_led_t*)malloc(sizeof(ws2811_led_t) * width * height);
+    //boardWindowInit();
+
+    printf("mx:%d\n", matrix);
+
+    setup_handlers();
+
+    if ((ret = ws2811_init(&ledstring)) != WS2811_SUCCESS) {
+        fprintf(stderr, "ws2811_init failed: %s\n", ws2811_get_return_t_str(ret));
+        return ret;
+    }
+
+    run();
 
     if (clear_on_exit) {
         matrix_clear();
         matrix_render();
-        ws2811_render( & ledstring);
+        ws2811_render(&ledstring);
     }
 
-    ws2811_fini( & ledstring);
+    ws2811_fini(&ledstring);
 
     printf("\n");
     return ret;

@@ -1,3 +1,4 @@
+#if 0
 #include "Render.h"
 #include "Values.h"
 #include "Util.h"
@@ -205,3 +206,5 @@ void flushRight(Window *window, int offset) {
         window->matrix[(WRITEABLE_COUNT - 1) - i] = 0;
     }
 }
+
+#endif

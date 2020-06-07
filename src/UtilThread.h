@@ -1,5 +1,12 @@
 #pragma once
 
+#include <functional>
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#define DWORD
+#define WINAPI
+#endif
 #include "BoardConfig.h"
 
 #ifdef USE_FORK
@@ -30,14 +37,18 @@ inline void executeOnChildThread(std::function<void(void)> execable) {
 #else
 
 inline void killChildThread() {
+#ifdef _WIN32
+
+#else
 	pthread_cancel(childThread);
+#endif
 }
 
 extern void resumeNormalOperations(int signum);
 
-extern "C" inline void* runChildThread(void* userData) {
+DWORD WINAPI runChildThread(void* userData) {
 	auto execable = (std::function<void(void)>*)userData;
-	boardWindowInit();
+	//boardWindowInit();
 	(*execable)();
 	resumeNormalOperations(0);
 	return 0;
@@ -45,7 +56,10 @@ extern "C" inline void* runChildThread(void* userData) {
 
 inline void executeOnChildThread(std::function<void(void)> execable) {
 	killChildThread();
-
+#ifdef _WIN32
+	CreateThread(NULL, 0, &runChildThread, &execable, 0, NULL);
+#else
 	pthread_create(&childThread, NULL, &runChildThread, &execable);
+#endif
 }
 #endif

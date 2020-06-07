@@ -24,8 +24,11 @@ std::string qGetTimeString() {
 
     std::stringstream ss;
     // ss << std::put_time(std::localtime(&in_time_t), "%l~%M~%S~%p");
+#ifdef _WIN32
+    ss << std::put_time(std::localtime(&in_time_t), "%I %M %p");
+#else
     ss << std::put_time(std::localtime(&in_time_t), "%l %M %p");
-
+#endif
     auto s = ss.str();
     // if (s[0] == ' ') {
     //     s.pop

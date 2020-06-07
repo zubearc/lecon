@@ -1,13 +1,18 @@
 #include <vector>
 #include <string>
 
+#define PICOJSON_USE_INT64
+#include "picojson.h"
 #include "InterfaceSpotify.h"
 #include "WebGet.h"
 #include "Util.h"
-#define PICOJSON_USE_INT64
-#include "picojson.h"
 #include "PixelSequences.h"
 #include "PixelSequenceLyrics.h"
+#include "UtilThread.h"
+#include "Render2.h"
+
+
+using namespace Render;
 
 std::string api_key = "";
 
@@ -57,7 +62,7 @@ void iSpotifyNPLTick() {
             last_playing_id = np_id;
         }
 
-    printf("cp is %d", childThreadPID);
+        //printf("cp is %d", childThreadPID);
 
         killChildThread();
         programMode = DisplayingDefault;
@@ -98,8 +103,8 @@ void iSpotifyNPLTick() {
             //     // else
             //     //     draw(i, 7, 0x2000);
             // }
-            flushLeft();
-            write("NP", 0x2000);
+            //flushLeft();
+            write(globalWindow, "NP", 0x2000);
             render();
             delay(1000);
             // writeScrollable(np_name, 0x2F00, 100);

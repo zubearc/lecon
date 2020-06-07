@@ -39,11 +39,10 @@ void qWeatherUpdate() {
 }
 
 void qWeatherStart() {
-    wLimitWriteRegion(32, 8);
-    flushLeft();
-	write("   " + qWeatherCurrentTemperature, 0xFF071585);
+    globalWindow->clear();
+	Render::write(globalWindow, "   " + qWeatherCurrentTemperature, 0xFF071585);
 	// write("NOW", 0xff0000, 16);
-	render();
+	Render::render();
 	delay(2000);
 
 	writeFlashing(qWeatherCurrentConditions, 0x276525);
@@ -52,12 +51,11 @@ void qWeatherStart() {
 	//  delay(2000);
 
     for (auto fe : qWeatherFuture) {
-        flushLeft();
-        write(fe, 0x2000);
+        globalWindow->clear();
+        Render::write(globalWindow, fe, 0x2000);
         
         // write("1 HR", 0x2000, 16);
-        render();
+        Render::render();
         delay(2000);
     }
-    wRestoreWriteRegion();
 }

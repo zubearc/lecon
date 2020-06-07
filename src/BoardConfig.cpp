@@ -1,8 +1,6 @@
 #include "BoardConfig.h"
 
-__thread int width = WIDTH;
-__thread int height = HEIGHT;
-__thread int led_count = LED_COUNT;
+#ifdef _WS2812
 
 ws2811_t ledstring {
 	100,
@@ -24,14 +22,10 @@ ws2811_channel_t channel1{
 };
 
 ws2811_led_t *matrix = 0;
-uint8_t running = 1;
 
 char lowBrightness = false;
 
 FontType globalDefaultFont = FontType::Old;
 
-FlushRegion flushRegion = FlushRegion::Both;
 
-
-__thread Window globalWindow;
-
+#endif

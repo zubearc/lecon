@@ -1,5 +1,7 @@
 #pragma once
 
+#if 0
+
 #include <vector>
 #include <stdint.h>
 
@@ -16,21 +18,10 @@ extern "C" {
 #include "Values.h"
 #include "PixelFonts2.h"
 
+#include "WS2812Render.h"
+
 #define NUM_LEDS LED_COUNT
 #define DATA_PIN 6
-
-inline long long matrix_render2(ws2811_led_t *matrix) {
-    int x, y;
-    long long hash = 0;
-
-    for (x = 0; x < WIDTH; x++) {
-        for (y = 0; y < HEIGHT; y++) {
-            ledstring.channel[0].leds[(y * WIDTH) + x] = matrix[y * WIDTH + x];
-            hash += (x * y) + matrix[y * WIDTH + x];
-        }
-    }
-    return hash;
-}
 
 inline void matrix_clear2(Window *window) {
     for (int i = 0; i < window->size; i++) {
@@ -45,16 +36,6 @@ inline void matrix_clear2(Window *window) {
     // }
 }
 
-inline int pixelMapToNP(int x, int y) {
-	int pixnum = x * 8;
-	if (x % 2) {
-		pixnum += 7 - (y % 8);
-	} else {
-		pixnum += y % 8;
-	}
-
-	return pixnum;
-}
 
 inline int pack(char c1, char c2, char c3, char c4) {
     return ((int)(((unsigned char)c1) << 24)
@@ -186,5 +167,8 @@ inline void _directFlush(int startX, int endX, int startY, int endY) {
 }
 
 inline void _directRender() {
+    
     ws2811_render(&ledstring);
 }
+
+#endif

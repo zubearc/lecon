@@ -1,10 +1,10 @@
 #include <vector>
 
+#define PICOJSON_USE_INT64
+#include "picojson.h"
 #include "PixelSequenceText.h"
 #include "PixelSequences.h"
 #include "Util.h"
-#define PICOJSON_USE_INT64
-#include "picojson.h"
 
 struct SequenceLine {
 	std::string text;
@@ -50,10 +50,10 @@ bool qTextInit() {
 
 		auto text = line["text"].get<std::string>();
 		auto font = line["font"].get<int64_t>();
-		auto delay= line["delay"].get<int64_t>();
+		auto dela = line["delay"].get<int64_t>();
 
-		printf("[qtext] line='%s', font=%d, delay=%d\n", text.c_str(), font, delay);
-		sequenceLines.push_back({ text, font, delay });
+		printf("[qtext] line='%s', font=%d, delay=%lld\n", text.c_str(), font, dela);
+		sequenceLines.push_back({ text, (int)font, (int)dela });
 	}
 
 	return true;
@@ -63,14 +63,18 @@ bool qTextRun() {
 	printf("qTextRun for %d lines\n", sequenceLines.size());
 	for (auto seq : sequenceLines) {
             // write("PARKCHESTER", 0x20, 0xffff, 0, FontType::Old);
-		flush();
-		write(seq.text, 0x20, seq.center ? 0xffff : 0, 0, FontType::Old);
-		render();
+		globalWindow->clear();
+		//flush();
+		Render::write(globalWindow, seq.text, 0x20, seq.center ? 0xffff : 0, 0, FontType::Old);
+		Render::render();
 		delay(seq.delay);
 
-		flush();
-		write("THIS IS", 0x20, seq.center ? 0xffff : 0, 0, FontType::Old);
-		render();
+		//flush();
+		globalWindow->clear();
+		Render::write(globalWindow, "THIS IS", 0x20, seq.center ? 0xffff : 0, 0, FontType::Old);
+		Render::render();
 		delay(seq.delay);
 	}
+
+	return true;
 }

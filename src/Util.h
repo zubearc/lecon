@@ -4,13 +4,18 @@
 #include <fstream>
 #include <ctime>
 #include <functional>
+#ifdef _WIN32
+#include <Windows.h>
+#else
 #include <sys/time.h> // unix gettimeofday
 #include <sys/types.h>
+#define _ASSERT
+#endif
 #include <signal.h>
 #include "Values.h"
 
 // My bootleg string split!
-inline int splitString(char delimiter, const String &what, int &pos, String &out) {
+inline int splitString(char delimiter, const std::string& what, int& pos, std::string& out) {
 	auto len = what.length();
 	if (pos == len) return 0;
 	for (int i = pos + 1; i < len; i++) {
@@ -28,35 +33,42 @@ inline int splitString(char delimiter, const String &what, int &pos, String &out
 }
 
 /** Read file into string. */
-inline std::string slurp (const std::string& path) {
-  std::ostringstream buf; 
-  std::ifstream input (path.c_str()); 
-  buf << input.rdbuf(); 
-  return buf.str();
+inline std::string slurp(const std::string& path) {
+	std::ostringstream buf;
+	std::ifstream input(path.c_str());
+	buf << input.rdbuf();
+	return buf.str();
 }
 
 inline std::stringstream slurps(const std::string& path) {
-  std::stringstream buf; 
-  std::ifstream input (path.c_str()); 
-  buf << input.rdbuf(); 
-  return buf;
+	std::stringstream buf;
+	std::ifstream input(path.c_str());
+	buf << input.rdbuf();
+	return buf;
 }
 
 
 inline int getCurrentHour() {
-    auto t = time(NULL);
-    auto tm_struct = localtime(&t);
+	auto t = time(NULL);
+	auto tm_struct = localtime(&t);
 
-    int hour = tm_struct->tm_hour;
-    return hour;
+	int hour = tm_struct->tm_hour;
+	return hour;
 }
 
 inline long long CurrentTimeMS() {
-    struct timeval te; 
-    gettimeofday(&te, NULL); // get current time
-    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // calculate milliseconds
-    // printf("milliseconds: %lld\n", milliseconds);
-    return milliseconds;
+#ifdef _WIN32
+	SYSTEMTIME time;
+	GetSystemTime(&time);
+	LONG time_ms = (time.wSecond * 1000) + time.wMilliseconds;
+	return time_ms;
+#else
+	struct timeval te;
+	gettimeofday(&te, NULL); // get current time
+	long long milliseconds = te.tv_sec * 1000LL + te.tv_usec / 1000; // calculate milliseconds
+	// printf("milliseconds: %lld\n", milliseconds);
+	return milliseconds;
+#endif
 }
 
 inline unsigned int randr(unsigned int min, unsigned int max) {
@@ -66,7 +78,9 @@ inline unsigned int randr(unsigned int min, unsigned int max) {
 }
 
 inline void SleepMS(int milliseconds) {
-    usleep(milliseconds * 1000);
+#ifdef _WIN32
+	Sleep(milliseconds);
+#else
+	usleep(milliseconds * 1000);
+#endif
 }
-
-#include "UtilThread.h"

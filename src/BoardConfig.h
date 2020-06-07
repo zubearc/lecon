@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef _WS2812
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,6 +24,8 @@
 #include "ws2811.h"
 #include "Window.h"
 
+#include "LeconConfig.h"
+
 #define ARRAY_SIZE(stuff)       (sizeof(stuff) / sizeof(stuff[0]))
 
 // defaults for cmdline options
@@ -32,17 +36,11 @@
 #define STRIP_TYPE              WS2811_STRIP_GBR		// WS2812/SK6812RGB integrated chip+leds
 //#define STRIP_TYPE            SK6812_STRIP_RGBW		// SK6812RGBW (NOT SK6812RGB)
 
-#define WIDTH                   64
-#define HEIGHT                  8
-#define LED_COUNT               (WIDTH * HEIGHT)
 
-extern __thread int width;
-extern __thread int height;
-extern __thread int led_count;
 
-#define WRITABLE_WIDTH globalWindow.width
-#define WRITABLE_HEIGHT globalWindow.height
-#define WRITEABLE_COUNT globalWindow.size
+// extern __thread int width;
+// extern __thread int height;
+// extern __thread int led_count;
 
 #define BRIGHTNESS 7
 // #define BRIGHTNESS 50
@@ -57,20 +55,7 @@ extern ws2811_t ledstring;
 
 extern ws2811_led_t *matrix;
 
-extern __thread Window globalWindow;
-
-extern uint8_t running;
-
-extern char lowBrightness;
-
 extern long long boardStateHash;
-
-enum class FontType:int {
-    Old,
-    New
-};
-
-extern FontType globalDefaultFont;
 
 enum FlushRegion : int {
     Both = 0,
@@ -78,11 +63,13 @@ enum FlushRegion : int {
     Right
 };
 
-extern FlushRegion flushRegion;
+// extern FlushRegion flushRegion;
 
-inline void boardWindowInit() {
-    globalWindow.width = width;
-    globalWindow.height = height;
-    globalWindow.size = led_count;
-    globalWindow.matrix = matrix;
-}
+// inline void boardWindowInit() {
+//     globalWindow.width = width;
+//     globalWindow.height = height;
+//     globalWindow.size = led_count;
+//     globalWindow.matrix = matrix;
+//}
+
+#endif

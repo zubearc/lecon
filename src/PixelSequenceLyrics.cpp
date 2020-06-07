@@ -49,7 +49,7 @@ bool _qLyricsInit(std::stringstream &ws) {
             auto red = randr(0x10, 100);
             auto green = randr(0x10, 100);
             auto blue = randr(0x10, 100);
-            col = pack(0x10, blue, green, red);
+            col = Render::pack(0x10, blue, green, red);
             // color = 0xAA;
         }
 
@@ -88,7 +88,7 @@ bool qLyricsInitSpotifyID(std::string spotify_id) {
 }
 
 bool qLyricsRun(int currentms) {
-    wLimitWriteRegion(WIDTH - 15, 8);
+    //wLimitWriteRegion(WIDTH - 15, 8);
     auto idelay = qLyrics[0].msdelay - currentms;
 
     long long late_correction = 0;

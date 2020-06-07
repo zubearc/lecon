@@ -1,5 +1,6 @@
 #pragma once
 
+#if 0
 #include "BoardConfig.h"
 
 struct DrawWindow {
@@ -24,3 +25,4 @@ inline void wRestoreWriteRegion() {
 // DrawWindow wSetWriteRegion(DrawWindow &window);
 
 // void wDestroyWriteRegion(DrawWindow &window);
+#endif

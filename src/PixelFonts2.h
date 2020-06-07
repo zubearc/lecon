@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cctype>
+#define PROGMEM
+
 struct XY {
   char y;
   char x;

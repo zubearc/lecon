@@ -4,7 +4,8 @@
 #include <stdlib.h>
 #include <string>
 #include "Values.h"
-#include "Render.h"
+#include "Render2.h"
+#include "PixelFonts2.h"
 #include "Util.h"
 
 #define delay SleepMS

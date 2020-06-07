@@ -2,7 +2,9 @@
 
 #include <string>
 #include <thread>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 #include "Window.h"
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
@@ -14,8 +16,6 @@
 
 typedef unsigned char u8;
 typedef std::string String;
-
-typedef Window Window;
 
 extern unsigned int loops;
 
@@ -30,7 +30,8 @@ enum LeconMode {
 
 extern LeconMode programMode;
 
-
+#ifndef _WIN32
 // Threads
 extern int childThreadPID;
 extern pthread_t childThread;
+#endif

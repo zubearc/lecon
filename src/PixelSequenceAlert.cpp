@@ -37,9 +37,9 @@ bool qAlertHasNearby() {
 }
 
 void qNearbyAlertStart(NearbyAlert alert) {
-    flush();
-    write("NEARBY!", 0x4040, 0xffff);
-    render();
+    Render::flush();
+    Render::write(globalWindow, "NEARBY!", 0x4040, 0xffff);
+    Render::render();
 
     delay(2000);
 
