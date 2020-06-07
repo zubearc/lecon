@@ -3,9 +3,6 @@
 #include <functional>
 #ifdef _WIN32
 #include <Windows.h>
-#else
-#define DWORD
-#define WINAPI
 #endif
 #include "BoardConfig.h"
 
@@ -36,7 +33,7 @@ inline void executeOnChildThread(std::function<void(void)> execable) {
 }
 #else
 
-inline void killChildThread() {
+void killChildThread() {
 #ifdef _WIN32
 
 #else
@@ -46,6 +43,8 @@ inline void killChildThread() {
 
 extern void resumeNormalOperations(int signum);
 
+
+#ifdef _WIN32
 DWORD WINAPI runChildThread(void* userData) {
 	auto execable = (std::function<void(void)>*)userData;
 	//boardWindowInit();
@@ -53,6 +52,15 @@ DWORD WINAPI runChildThread(void* userData) {
 	resumeNormalOperations(0);
 	return 0;
 }
+#else
+extern "C" inline void* runChildThread(void* userData) {
+	auto execable = (std::function<void(void)>*)userData;
+	//boardWindowInit();
+	(*execable)();
+	resumeNormalOperations(0);
+	return 0;
+}
+#endif
 
 inline void executeOnChildThread(std::function<void(void)> execable) {
 	killChildThread();

@@ -17,33 +17,28 @@ extern "C" {
 #include "BoardConfig.h"
 }
 
-int childThreadPID = 0;
-pthread_t childThread;
+void matrix_clear(void) {
+    int x, y;
+
+    for (y = 0; y < (HEIGHT); y++) {
+        for (x = 0; x < WIDTH; x++) {
+            matrix[y * WIDTH + x] = 0;
+        }
+    }
+}
+
+void matrix_render(void) {
+    int x, y;
+
+    for (x = 0; x < WIDTH; x++) {
+        for (y = 0; y < HEIGHT; y++) {
+            ledstring.channel[0].leds[(y * WIDTH) + x] = matrix[y * WIDTH + x];
+        }
+    }
+}
 
 static void ctrl_c_handler(int signum) {
     (void)(signum);
     running = 0;
-}
-
-void resumeNormalOperations(int signum) {
-    printf("GOT resumeNormalOperations!\n");
-    flush();
-    programMode = DisplayingDefault;
-    slideIn = true;
-}
-
-static void setup_handlers(void) {
-    struct sigaction sa = {
-        ctrl_c_handler,
-    };
-
-    sigaction(SIGINT, &sa, NULL);
-    sigaction(SIGTERM, &sa, NULL);
-
-    struct sigaction resumeAction = {
-        resumeNormalOperations
-    };
-
-    sigaction(SIGUSR1, &resumeAction, NULL);
 }
 #endif

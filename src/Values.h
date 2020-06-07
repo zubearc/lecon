@@ -29,9 +29,3 @@ enum LeconMode {
 };
 
 extern LeconMode programMode;
-
-#ifndef _WIN32
-// Threads
-extern int childThreadPID;
-extern pthread_t childThread;
-#endif

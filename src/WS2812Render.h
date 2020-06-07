@@ -1,8 +1,10 @@
 #pragma once
 
 #ifdef _WS2812
+#include "BoardConfig.h"
+#include "Screen.h"
 
-inline long long _ws2812MatrixRender(ws2811_led_t* matrix) {
+long long _ws2812MatrixRender(ws2811_led_t* matrix) {
     int x, y;
     long long hash = 0;
 
@@ -12,6 +14,24 @@ inline long long _ws2812MatrixRender(ws2811_led_t* matrix) {
             hash += (x * y) + matrix[y * WIDTH + x];
         }
     }
+    return hash;
+}
+
+long long _ws2812MatrixRender(Screen* matrix) {
+    int x, y;
+    long long hash = 0;
+
+    for (int i = 0; i < LED_COUNT; i++) {
+        ledstring.channel[0].leds[i] = screen->matrix[i];
+        hash += i + screen->matrix[i];
+    }
+
+    /*for (x = 0; x < WIDTH; x++) {
+        for (y = 0; y < HEIGHT; y++) {
+            ledstring.channel[0].leds[(y * WIDTH) + x] = screen->matroget(x,y);
+            hash += (x * y) + matrix[y * WIDTH + x];
+        }
+    }*/
     return hash;
 }
 

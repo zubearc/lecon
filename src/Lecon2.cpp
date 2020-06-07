@@ -1,7 +1,7 @@
 #include "Lecon2.h"
 
-#include "LeconConfig.h"
 
+#include "LeconConfig.h"
 #include "Render2.h"
 #include "PixelSequences.h"
 #include "PixelSequenceTime.h"
@@ -9,16 +9,15 @@
 #include "PixelSequenceLyrics.h"
 #include "PixelSequenceWeather.h"
 #include "PixelSequenceText.h"
-
 #include "InterfaceSpotify.h"
-
-#ifdef _WS2812
-#include "LeconWS2812.h"
-#endif
 
 bool running = true;
 int hour;
 bool slideIn = false;
+
+#ifdef _WS2812
+#include "LeconWS2812.h"
+#endif
 
 bool runInterruptableChecks() {
     iSpotifyNPLTick();
@@ -336,6 +335,22 @@ finish:
 
 
 #ifdef _WS2812
+
+static void setup_handlers(void) {
+    struct sigaction sa = {
+        ctrl_c_handler,
+    };
+
+    sigaction(SIGINT, &sa, NULL);
+    sigaction(SIGTERM, &sa, NULL);
+
+    struct sigaction resumeAction = {
+        resumeNormalOperations
+    };
+
+    sigaction(SIGUSR1, &resumeAction, NULL);
+}
+
 int main(int argc, char* argv[]) {
     ws2811_return_t ret;
 
@@ -358,7 +373,7 @@ int main(int argc, char* argv[]) {
         // }
     }
 
-    matrix = (ws2811_led_t*)malloc(sizeof(ws2811_led_t) * width * height);
+    matrix = (ws2811_led_t*)malloc(sizeof(ws2811_led_t) * WIDTH * HEIGHT);
     //boardWindowInit();
 
     printf("mx:%d\n", matrix);

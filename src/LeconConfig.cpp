@@ -7,7 +7,7 @@ char cLowBrightness = false;
 unsigned int loops = 0;
 LeconMode programMode = LeconMode::DisplayingDefault;
 Screen* screen = nullptr;
-Window* globalWindow = nullptr;
+THREADLOCAL Window* globalWindow = nullptr;
 
 void initBoard(int height, int width) {
 	screen = new Screen(height, width);

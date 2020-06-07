@@ -1,5 +1,6 @@
 #pragma once
 
+// #define _WS2812 1
 #ifdef _WS2812
 
 #include <stdint.h>
@@ -25,6 +26,11 @@
 #include "Window.h"
 
 #include "LeconConfig.h"
+
+#include <thread>
+#ifndef _WIN32
+#include <unistd.h>
+#endif
 
 #define ARRAY_SIZE(stuff)       (sizeof(stuff) / sizeof(stuff[0]))
 
@@ -72,4 +78,10 @@ enum FlushRegion : int {
 //     globalWindow.matrix = matrix;
 //}
 
+#endif
+
+#ifndef _WIN32
+// Threads
+extern int childThreadPID;
+extern pthread_t childThread;
 #endif

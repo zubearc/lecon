@@ -1,5 +1,6 @@
 #include "BoardConfig.h"
 
+
 #ifdef _WS2812
 
 ws2811_t ledstring {
@@ -21,11 +22,14 @@ ws2811_channel_t channel1{
 	// BRIGHTNESS
 };
 
+long long boardStateHash = 0;
 ws2811_led_t *matrix = 0;
 
 char lowBrightness = false;
 
-FontType globalDefaultFont = FontType::Old;
+//FontType globalDefaultFont = FontType::Old;
 
+int childThreadPID = 0;
+pthread_t childThread;
 
 #endif

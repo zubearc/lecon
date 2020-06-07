@@ -20,3 +20,4 @@ link_directories(/home/pi/Documents/LED/rpi_ws281x/)
 
 target_link_libraries (Lecon /home/pi/Documents/LED/rpi_ws281x/libws2811.a)
 target_link_libraries (Lecon pthread)
+add_definitions(-D_WS2812)
