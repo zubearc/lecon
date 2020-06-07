@@ -6,6 +6,7 @@
 #include <functional>
 #ifdef _WIN32
 #include <Windows.h>
+#include <filesystem>
 #else
 #include <sys/time.h> // unix gettimeofday
 #include <sys/types.h>
@@ -32,21 +33,47 @@ inline int splitString(char delimiter, const std::string& what, int& pos, std::s
 	return len;
 }
 
+
+inline std::string getCurrentDirectory() {
+	std::string curr_dir = "";
+#ifdef _WIN32
+	auto cwd = std::filesystem::current_path();
+	curr_dir = cwd.string() + "\\Debug\\";
+#endif
+
+	return curr_dir;
+}
+
+
 /** Read file into string. */
-inline std::string slurp(const std::string& path) {
+inline std::string slurp(std::string path) {
+	std::string curr_dir = getCurrentDirectory();
+	path = curr_dir + path;
+
 	std::ostringstream buf;
 	std::ifstream input(path.c_str());
 	buf << input.rdbuf();
 	return buf.str();
 }
 
-inline std::stringstream slurps(const std::string& path) {
+inline std::stringstream slurps(std::string path) {
+	std::string curr_dir = getCurrentDirectory();
+	path = curr_dir + path;
+
 	std::stringstream buf;
 	std::ifstream input(path.c_str());
 	buf << input.rdbuf();
 	return buf;
 }
 
+inline void executeSystem(std::string command) {
+#ifdef _WIN32
+	std::string s = "cd " + getCurrentDirectory() + " && " + command;
+#else
+	auto s = command;
+#endif
+	system(s.c_str());
+}
 
 inline int getCurrentHour() {
 	auto t = time(NULL);

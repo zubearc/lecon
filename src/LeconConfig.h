@@ -3,8 +3,13 @@
 #include "Screen.h"
 #include "Window.h"
 
-#define WIDTH                   64
+#ifdef _WS2812
+#define WIDTH                   31
 #define HEIGHT                  8
+#else
+#define WIDTH                   64
+#define HEIGHT                  32
+#endif
 #define LED_COUNT               (WIDTH * HEIGHT)
 
 #define WRITABLE_WIDTH globalWindow.width
@@ -33,3 +38,6 @@ extern THREADLOCAL Window* globalWindow;
 
 
 void initBoard(int height, int width);
+
+void setBoardBrightness(unsigned char level);
+unsigned char getBoardBrightness();

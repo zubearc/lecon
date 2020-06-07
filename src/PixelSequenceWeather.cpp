@@ -6,7 +6,7 @@
 #include "Util.h"
 
 void qWeatherUpdate() {
-    system("python ../scripts/getweather.py");
+    executeSystem("python ../scripts/getweather.py");
 
     auto ws = slurps("../data/weather.txt");
     

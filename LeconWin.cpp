@@ -14,13 +14,18 @@
 int main() {
     std::cout << "Hello World!\n";
 
-    auto console = new Screen(32, 64);
+    /*auto console = new Screen(32, 64);
     //console->set(0, 0, 1);
     console->set(2, 0, 1);
     //console->write('C');
-    console->write("Hello");
+    console->write("Hello");*/
 
-    for (int i = 0; i < 100; i++) {
+    std::thread lecon(run);
+
+    Sleep(100);
+    auto console = screen;
+
+    /*for (int i = 0; i < 100; i++) {
         console->clear();
         system("cls");
         if (i % 2 == 0) {
@@ -30,7 +35,15 @@ int main() {
         }
         console->draw();
         Sleep(2000);
+    }*/
+
+    while (true) {
+        system("cls");
+        console->draw();
+        Sleep(100);
     }
+
+    lecon.join();
 
     //system("pause");
 }

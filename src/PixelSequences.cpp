@@ -264,7 +264,7 @@ void writeFlashing(const String &text, long color, int speed, int startingIndex)
     auto timer = nullptr;
 }
 
-void writeFlashingTimed(const String &text, long color, int completeWithinMS, bool allowOverdraw) {
+void writeFlashingTimed(const String &text, long color, long primaryColor, int completeWithinMS, bool allowOverdraw) {
     auto tempTime = 0;
 
 	auto count = std::count(text.begin(), text.end(), ' ') + 1;

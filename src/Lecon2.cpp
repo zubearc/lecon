@@ -33,10 +33,21 @@ void runDefault() {
     }
 
     if ((loops % 1060) == 0) {
-        if (hour > 6 && hour < 18)
+        if (hour > 6 && hour < 18) {
             qWeatherUpdate();
+        }
+        if (hour > 7 && hour < 18) {
+            setBoardBrightness(25);
+            //ledstring.channel[0].brightness = 25;
+            //ledstring.channel[1].brightness = 25;//patch
+        } else if (hour < 7) {
+            setBoardBrightness(7);
+            //ledstring.channel[0].brightness = 7;
+            //ledstring.channel[1].brightness = 25;//patch
+        }
         qNearbyUpdate();
     }
+
 
     if ((loops % 14) == 0) {
         // printf("would check, [%s]\n", qLyricAuthor.c_str());

@@ -65,7 +65,8 @@ extern "C" inline void* runChildThread(void* userData) {
 inline void executeOnChildThread(std::function<void(void)> execable) {
 	killChildThread();
 #ifdef _WIN32
-	CreateThread(NULL, 0, &runChildThread, &execable, 0, NULL);
+	execable();
+	//CreateThread(NULL, 0, &runChildThread, &execable, 0, NULL);
 #else
 	pthread_create(&childThread, NULL, &runChildThread, &execable);
 #endif

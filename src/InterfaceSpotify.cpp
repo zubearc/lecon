@@ -11,7 +11,6 @@
 #include "UtilThread.h"
 #include "Render2.h"
 
-
 using namespace Render;
 
 std::string api_key = "";
@@ -104,7 +103,7 @@ void iSpotifyNPLTick() {
             //     //     draw(i, 7, 0x2000);
             // }
             //flushLeft();
-            write(globalWindow, "NP", 0x2000);
+            write(globalWindow, np_name, 0x2000);
             render();
             delay(1000);
             // writeScrollable(np_name, 0x2F00, 100);

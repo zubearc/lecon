@@ -28,7 +28,11 @@ void writeScrollable(const String &text, long color, int speed = 200, FontType f
 
 void writeFlashing(const String &text, long color, int speed = 900, int startingIndex = 0);
 
-void writeFlashingTimed(const String &text, long color, int completeWithinMS, bool allowOverdraw = false);
+void writeFlashingTimed(const String &text, long color, long primaryColor, int completeWithinMS, bool allowOverdraw = false);
+
+inline void writeFlashingTimed(const String& text, long color, int completeWithinMS, bool allowOverdraw = false) {
+    return writeFlashingTimed(text, 0x20, color, completeWithinMS, allowOverdraw);
+}
 
 void displayFlyingArrow(bool rightToLeft, int startX, int endX);
 

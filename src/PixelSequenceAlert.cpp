@@ -9,7 +9,7 @@
 std::vector<NearbyAlert> qNearbyAlert;
 
 void qNearbyUpdate() {
-    system("python ../scripts/getcitizen.py");
+    executeSystem("python ../scripts/getcitizen.py");
 
     auto ws = slurps("../data/nearby_incidents.txt");
     

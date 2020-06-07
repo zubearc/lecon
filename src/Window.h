@@ -23,13 +23,19 @@ struct Window {
 
     int get(int x, int y) {
         auto i = this->width * y + x;
-        _ASSERT(i < this->size);
+        if (i > this->size) {
+            return 0;
+        }
+        _ASSERT(i <= this->size);
         return this->matrix[i];
     }
 
     void set(int x, int y, int val) {
         auto i = this->width * y + x;
-        _ASSERT(i < this->size);
+        if (i > this->size) {
+            return;
+        }
+        _ASSERT(i <= this->size);
         this->matrix[i] = val;
     }
 

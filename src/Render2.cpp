@@ -84,8 +84,14 @@ int Render::dryWrite(Window* window, const String& text, FontType font) {
 }
 
 int Render::write(Window* window, const String& text, long rgba, FontType font) {
+	auto x = 0;
+	auto lwlen = 0;
+	for (auto c : text) {
+		lwlen = drawChar(window, x, 0, c, rgba, font);
+		x += lwlen + 1;
+	}
 
-	return 0;
+	return x;
 }
 
 void Render::write(Window* window, const String& text, long rgba, int x, int y, FontType font) {
@@ -172,4 +178,5 @@ void Render::render() {
 
 void Render::flush() {
 	screen->clear();
+	globalWindow->clear();
 }

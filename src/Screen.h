@@ -58,9 +58,12 @@ public:
 
 	void draw() {
 		for (int y = 0; y < height; y++) {
+			printf("%d ", y);
 			for (int x = 0; x < width; x++) {
 				auto val = get(x, y);
+				printf(val >= 1 ? "x" : ".");
 			}
+			printf("\n");
 		}
 	}
 
